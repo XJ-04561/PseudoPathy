@@ -72,3 +72,37 @@ class PathLibrary:
 			if name == "workDir" or name == "userDir" or name == "installDir": continue
 			ret.append( f"\t{name:<24} = {self._lib[name]}")
 		return "\n".join(ret)
+
+	def access(self, path, mode : str="rwx", create : bool=False):
+		'''Throws appropriate errors if access is not possible.'''
+		
+		if not os.path.exists(path):
+			if create:
+				LOGGER.debug("Path does not exist, creating it instead: '{}'".format(path))
+				os.makedirs(path)
+			else:
+				LOGGER.error("Path does not exist: '{}'".format(path))
+				raise FileNotFoundError("Path does not exist: '{}'".format(path))
+		
+		if not all(os.access(path, PERMS_LOOKUP_OS[c]) for c in mode):
+			LOGGER.error("Missing {perms} permissions for path: '{path}'".format(path=path, perms="+".join([PERMS_LOOKUP[c] for c in mode if not self.perms[path][c]])))
+			raise PermissionError("Missing {perms} permissions for path: '{path}'".format(path=path, perms="+".join([PERMS_LOOKUP[c] for c in mode if not self.perms[path][c]])))
+		
+		return True
+	
+	def accessible(self, path, mode : str="rwx", create : bool=False):
+		'''Returns True/False for the accessibility question.'''
+		
+		if not os.path.exists(path):
+			if create:
+				LOGGER.debug("Path does not exist, creating it instead: '{}'".format(path))
+				os.makedirs(path)
+			else:
+				LOGGER.debug("Path does not exist: '{}'".format(path))
+				return False
+		
+		if not all(os.access(path, PERMS_LOOKUP_OS[c]) for c in mode):
+			LOGGER.debug("Missing {perms} permissions for path: '{path}'".format(path=path, perms="+".join([PERMS_LOOKUP[c] for c in mode if not self.perms[path][c]])))
+			return False
+		
+		return True
