@@ -198,7 +198,7 @@ class PathLibrary(MinimalPathLibrary):
 		ex: `commonGroups.UWI` will get you a PathGroup with an order of userDir, workDir, installDir.
 	"""
 	
-	commonGroups : MinimalPathLibrary
+	commonGroups : CommonGroups
 
 	@property
 	def workDir(self):		return self._lib.get("workDir") or DirectoryPath(os.curdir)
