@@ -1,8 +1,8 @@
 
 try:
-	from PseudoPathy._globals import *
+	from PseudoPathy.Globals import *
 except:
-	from _globals import *
+	from PseudoPathy.Globals import *
 
 class PathGroup:
 	""""""
@@ -13,6 +13,10 @@ class PathGroup:
 	def writable(self): return self.__getitem__(self, "", purpose="w")
 	@property
 	def readable(self): return self.__getitem__(self, "", purpose="r")
+	@property
+	def executable(self): return self.__getitem__(self, "", purpose="x")
+	@property
+	def fullPerms(self): return self.__getitem__(self, "", purpose="rwx")
 
 	def __init__(self, *paths : tuple[str], purpose="r"):
 		self.defaultPurpose = purpose
@@ -60,7 +64,7 @@ class PathGroup:
 		return False
 	
 	def __iter__(self):
-		return self._roots
+		return iter(self._roots)
 
 	def __str__(self) -> str:
 		return "<PathGroup>\n" + "\n".join(["  {}:d{}{}{}".format(r, *[c if os.access(r, PERMS_LOOKUP_OS[c]) else "-" for c in "rwx"]) for r in self._roots]) + "\n</PathGroup>"

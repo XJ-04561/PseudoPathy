@@ -1,10 +1,10 @@
 
 try:
-	from PseudoPathy._globals import *
+	from PseudoPathy.Globals import *
 	from PseudoPathy.Paths import Path, FilePath, DirectoryPath, DisposablePath
 	from PseudoPathy.Group import PathGroup
 except:
-	from _globals import *
+	from Globals import *
 	from Paths import Path, FilePath, DirectoryPath, DisposablePath
 	from Group import PathGroup
 

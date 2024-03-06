@@ -1,10 +1,10 @@
 
 
 try:
-	from PseudoPathy._globals import *
+	from PseudoPathy.Globals import *
 	from PseudoPathy.Group import PathGroup
 except:
-	from _globals import *
+	from PseudoPathy.Globals import *
 	from Group import PathGroup
 
 class Path(str):
@@ -15,38 +15,41 @@ class Path(str):
 	def __new__(cls, *paths, purpose="r"):
 		if cls is Path:
 			if pIsFile(paths[-1]):
-				obj = FilePath(super(Path, cls).__new__(cls, pJoin(*paths)))
+				cls = FilePath
 			else:
-				obj = DirectoryPath(super(Path, cls).__new__(cls, pJoin(*paths)))
-		else:
-			obj = super(Path, cls).__new__(cls, pJoin(*paths))
+				cls = DirectoryPath
+		
+		obj = super(Path, cls).__new__(cls, pSuperAbs(pJoin(*paths)))
 		obj.defaultPurpose = purpose
 		return obj
 	
 	def __add__(self, right):
-		return DirectoryPath(str.__add__(self.rstrip(pSep), right)) if not pIsFile(right) else FilePath(str.__add__(self.rstrip(pSep), right))
+		return Path(str.__add__(self.rstrip(pSep), right), purpose=self.defaultPurpose)
 
 	def __gt__(self, right):
-		return Path(self, right)
+		return Path(self, right, purpose=getattr(right, "defaultPurpose", None) or self.defaultPurpose)
 	
 	def __lt__(self, left):
-		return Path(left, self)
+		return Path(left, self, purpose=self.defaultPurpose)
 
 	def __or__(self, right : Path|PathGroup):
-		return PathGroup(self, *right, purpose=right.defaultPurpose or "r")
+		return PathGroup(self, *right, purpose=getattr(right, "defaultPurpose", None) or self.defaultPurpose)
 	
 	def __ror__(self, left : Path|PathGroup):
-		return PathGroup(*left, self, purpose=self.defaultPurpose or "r")
+		return PathGroup(*left, self, purpose=self.defaultPurpose or getattr(left, "defaultPurpose", None))
 		
 	def __iter__(self) -> list[Path]:
-		return [self]
+		return iter([self])
 	
 	def __getitem__(self, path : str, purpose:str=None) -> str:
-		if purpose is None:
-			purpose = self.defaultPurpose
-		if os.path.exists(self > path):
-			if all(os.access(self > path, PERMS_LOOKUP_OS[p]) for p in purpose):
-				return FilePath(self > path, purpose=purpose) if pIsFile(path) else DirectoryPath(self > path, purpose=purpose)
+		if type(path) in [slice, int]:
+			return str.__getitem__(self, path)
+		else:
+			if purpose is None:
+				purpose = self.defaultPurpose
+			if os.path.exists(self > path):
+				if all(os.access(self > path, PERMS_LOOKUP_OS[p]) for p in purpose):
+					return Path(self > path, purpose=purpose)
 		return None
 
 class DirectoryPath(Path):
@@ -62,7 +65,9 @@ class FilePath(Path):
 	# 	raise TypeError(f"Attempted to append path to a filepath, this behovior is not currently supported (Allowed). Attempted to combine '{self}' with '{right}'")
 
 class DisposablePath(Path):
-	""""""
+	"""Will remove iteslf and its contents using shutil.rmtree in a try-except with ignore_errors=True.
+	All DisposablePath instances can be disabled (Making them just a copy of `Path`) by setting
+	PseudoPathy.Globals.DISPOSE=False."""
 
 	def __del__(self):
 		if DISPOSE:
