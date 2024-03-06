@@ -60,9 +60,15 @@ class DirectoryPath(Path):
 class FilePath(Path):
 	""""""
 
-	pass
-	# def __lt__(self, right):
-	# 	raise TypeError(f"Attempted to append path to a filepath, this behovior is not currently supported (Allowed). Attempted to combine '{self}' with '{right}'")
+	ext : str
+	@property
+	def ext(self):
+		return "."+self.rpartition(".")[-1]
+	
+	def __lshift__(self, value : str):
+		"""Creates a version of the `FilePath` with the right string as the file extension. This changes the text
+		following the last dot of the file, instead of appending the new file extension behind the old one."""
+		return FilePath(self.rsplit(".", 1)[0]+"."+value.lstrip("."))
 
 class DisposablePath(Path):
 	"""Will remove iteslf and its contents using shutil.rmtree in a try-except with ignore_errors=True.

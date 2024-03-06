@@ -45,7 +45,7 @@ class MinimalPathLibrary:
 		self._lib[key] = value
 	
 	def __getattr__(self, name):
-		return self._lib[name]
+		return self._lib.get(name)
 	
 	def __setattr__(self, name, value):
 		self._lib[name] = value
