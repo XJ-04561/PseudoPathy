@@ -199,6 +199,31 @@ class PathLibrary(MinimalPathLibrary):
 	"""
 	
 	commonGroups : CommonGroups
+	"""```python
+	def __init__(self):
+		self.locals=PathGroup(self.workDir, self.userDir)
+		self.personal=PathGroup(self.userDir, self.workDir)
+		self.shared=PathGroup(self.installDir, self.userDir, self.workDir)
+		self.withBackup=PathGroup(self.workDir, self.installDir, self.userDir)
+
+		# Acronymized `PathGroup`s of every combination of the three default directories.
+		self.W = PathGroup(self.workDir)
+		self.U = PathGroup(self.userDir)
+		self.I = PathGroup(self.installDir)
+		self.WU = PathGroup(self.workDir, self.userDir)
+		self.UW = PathGroup(self.userDir, self.workDir)
+		self.WI = PathGroup(self.workDir, self.installDir)
+		self.IW = PathGroup(self.installDir, self.workDir)
+		self.UI = PathGroup(self.userDir, self.installDir)
+		self.IU = PathGroup(self.installDir, self.userDir)
+		self.WUI = PathGroup(self.workDir, self.userDir, self.installDir)
+		self.WIU = PathGroup(self.workDir, self.installDir, self.userDir)
+		self.UWI = PathGroup(self.userDir, self.workDir, self.installDir)
+		self.IWU = PathGroup(self.installDir, self.workDir, self.userDir)
+		self.UIW = PathGroup(self.userDir, self.installDir, self.workDir)
+		self.IUW = PathGroup(self.installDir, self.userDir, self.workDir)
+	```
+	"""
 
 	@property
 	def workDir(self):		return self._lib.get("workDir") or DirectoryPath(os.curdir)
