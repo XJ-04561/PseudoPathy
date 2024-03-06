@@ -71,7 +71,7 @@ class PathGroup:
 		for r in self._roots:
 			if os.path.exists(r > path):
 				if all(os.access(r > path, PERMS_LOOKUP_OS[p]) for p in purpose):
-					return Path(r > path)
+					return FilePath(r > path) if pIsFile(path) else DirectoryPath(r > path)
 		return None
 	
 	def find(self, path : str, purpose:str=None):

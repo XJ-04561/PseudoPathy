@@ -10,7 +10,9 @@ except:
 class Path(str):
 	""""""
 
-	def __new__(cls, *paths):
+	defaultPurpose : str
+
+	def __new__(cls, *paths, purpose="r"):
 		if cls is Path:
 			if pIsFile(paths[-1]):
 				obj = FilePath(super(Path, cls).__new__(cls, pJoin(*paths)))
@@ -18,28 +20,34 @@ class Path(str):
 				obj = DirectoryPath(super(Path, cls).__new__(cls, pJoin(*paths)))
 		else:
 			obj = super(Path, cls).__new__(cls, pJoin(*paths))
+		obj.defaultPurpose = purpose
 		return obj
 	
 	def __add__(self, right):
 		return DirectoryPath(str.__add__(self.rstrip(pSep), right)) if not pIsFile(right) else FilePath(str.__add__(self.rstrip(pSep), right))
 
 	def __gt__(self, right):
-		return DirectoryPath(self, right) if not pIsFile(right) else self.__new__(self, right)
+		return Path(self, right)
 	
 	def __lt__(self, left):
-		return DirectoryPath(left, self)
+		return Path(left, self)
 
-	def __or__(self, right):
-		if type(right) is PathGroup:
-			return PathGroup(self, *right._roots, purpose=right.defaultPurpose)
-		else:
-			return PathGroup(self, right)
+	def __or__(self, right : Path|PathGroup):
+		return PathGroup(self, *right, purpose=right.defaultPurpose or "r")
 	
-	def __ror__(self, left):
-		if type(left) is PathGroup:
-			return PathGroup(*left._roots, self, purpose=left.defaultPurpose)
-		else:
-			return PathGroup(left, self)
+	def __ror__(self, left : Path|PathGroup):
+		return PathGroup(*left, self, purpose=self.defaultPurpose or "r")
+		
+	def __iter__(self) -> list[Path]:
+		return [self]
+	
+	def __getitem__(self, path : str, purpose:str=None) -> str:
+		if purpose is None:
+			purpose = self.defaultPurpose
+		if os.path.exists(self > path):
+			if all(os.access(self > path, PERMS_LOOKUP_OS[p]) for p in purpose):
+				return FilePath(self > path, purpose=purpose) if pIsFile(path) else DirectoryPath(self > path, purpose=purpose)
+		return None
 
 class DirectoryPath(Path):
 	""""""

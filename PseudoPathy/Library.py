@@ -8,20 +8,9 @@ except:
 	from Paths import Path, FilePath, DirectoryPath, DisposablePath
 	from Group import PathGroup
 
-class PathLibrary:
-	"""
-		This structure allows for defining file managing as well and making sure that directory and file path
-		information is simply passed around by handing around the same 'Library'.
-	"""
-	
+class MinimalPathLibrary:
+	"""Same functionalities as PathLibrary, but with no default directories and groups."""
 	_lib : dict[str,Path]
-
-	@property
-	def workDir(self):		return self._lib.get("workDir") or DirectoryPath(pAbs(os.path.expandvars(os.curdir)))
-	@property
-	def userDir(self):		return self._lib.get("userDir") or DirectoryPath(pExpUser("~"))
-	@property
-	def installDir(self):	return self._lib.get("installDir") or sys.argv[0]
 	
 	def __init__(self, *args, **kwargs):
 		object.__setattr__(self, "_lib", {})
@@ -45,6 +34,9 @@ class PathLibrary:
 			return True
 		else:
 			return False
+	
+	def __iter__(self):
+		return object.__getattribute__(self, "_lib").items()
 
 	def __getitem__(self, key):
 		return self.__getattribute__(key)
@@ -64,12 +56,7 @@ class PathLibrary:
 	def __str__(self):
 		# Works nicely, don't question it.
 		ret = ["Directories in Library at 0x{:0>16}:\n".format(hex(id(self))[2:])]
-		ret.append( f"\t{'workDir':<24} = {self.workDir}")
-		ret.append( f"\t{'userDir':<24} = {self.userDir}")
-		ret.append( f"\t{'installDir':<24} = {self.installDir}")
-		ret.append("")
 		for name in sorted(self._lib.keys()):
-			if name == "workDir" or name == "userDir" or name == "installDir": continue
 			ret.append( f"\t{name:<24} = {self._lib[name]}")
 		return "\n".join(ret)
 
@@ -106,3 +93,42 @@ class PathLibrary:
 			return False
 		
 		return True
+
+class PathLibrary(MinimalPathLibrary):
+	"""
+		This structure allows for defining file managing as well and making sure that directory and file path
+		information is simply passed around by handing around the same 'Library'.
+
+		Contains some default paths for (and called as) workDir, userDir, installDir. All of which can be overriden by assignment.
+		os functions are used for default workDir and userDir. sys and os is used for installDir.
+
+		Also contains 
+	"""
+	
+	commonGroups : PathLibrary[PathGroup]
+
+	@property
+	def workDir(self):		return self._lib.get("workDir") or DirectoryPath(pAbs(os.path.expandvars(os.curdir)))
+	@property
+	def userDir(self):		return self._lib.get("userDir") or DirectoryPath(pExpUser("~"))
+	@property
+	def installDir(self):	return self._lib.get("installDir") or sys.argv[0]
+	@cached_property
+	def commonGroups(self):
+		return MinimalPathLibrary(
+			locals=PathGroup(self.workDir, self.userDir),
+			personal=PathGroup(self.userDir, self.workDir),
+			shared=PathGroup(self.installDir, self.userDir, self.workDir)
+		)
+	
+	def __str__(self):
+		# Works nicely, don't question it.
+		ret = ["Directories in Library at 0x{:0>16}:\n".format(hex(id(self))[2:])]
+		ret.append( f"\t{'workDir':<24} = {self.workDir}")
+		ret.append( f"\t{'userDir':<24} = {self.userDir}")
+		ret.append( f"\t{'installDir':<24} = {self.installDir}")
+		ret.append("")
+		for name in sorted(self._lib.keys()):
+			if name == "workDir" or name == "userDir" or name == "installDir": continue
+			ret.append( f"\t{name:<24} = {self._lib[name]}")
+		return "\n".join(ret)
