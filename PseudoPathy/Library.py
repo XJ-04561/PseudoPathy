@@ -39,7 +39,7 @@ class PathLibrary:
 					pass
 	
 	def __contains__(self, item):
-		if self[item] is not None:
+		if item in self._lib:
 			return True
 		elif any(self[a] == item for a in dir(self)):
 			return True

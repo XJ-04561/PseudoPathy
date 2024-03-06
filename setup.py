@@ -1,10 +1,9 @@
 from setuptools import setup, find_packages
 import os
-from PseudoPathy.__init__ import __version__
 
 setup(
     name="PseudoPathy",
-    version=__version__,
+    version=1.0,
     url=None,
     description="\"Smart\" file- and directory path managing package.",
 
@@ -23,6 +22,6 @@ setup(
 
     keywords="Paths Path Filemanagement Directories Directorymanagement",
 
-    install_requires=[""],
+    install_requires=[],
     packages=find_packages(exclude=[os.path.join('PseudoPathy', 'test.py')])
 )
