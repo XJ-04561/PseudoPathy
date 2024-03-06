@@ -1,8 +1,14 @@
 
 
-import os, shutil, random
+import os, shutil, random, sys
 from functools import cached_property, cache
 random.seed()
+
+class Path: pass
+class DirectoryPath: pass
+class FilePath: pass
+class PathGroup: pass
+class PathLibrary: pass
 
 class DummyLogger:
     """A dummy logger for all Path derived objects to log to, except it does not

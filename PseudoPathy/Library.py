@@ -1,9 +1,12 @@
 
-
-from _globals import *
-
-from PseudoPathy.Paths import *
-from PseudoPathy.Group import *
+try:
+	from PseudoPathy._globals import *
+	from PseudoPathy.Paths import Path, FilePath, DirectoryPath, DisposablePath
+	from PseudoPathy.Group import PathGroup
+except:
+	from _globals import *
+	from Paths import Path, FilePath, DirectoryPath, DisposablePath
+	from Group import PathGroup
 
 class PathLibrary:
 	"""
@@ -14,21 +17,23 @@ class PathLibrary:
 	_lib : dict[str,Path]
 
 	@property
-	def workDir(self):		return self._lib.get("workDir") or DirectoryPath(os.curdir)
-	@cached_property
+	def workDir(self):		return self._lib.get("workDir") or DirectoryPath(pAbs(os.path.expandvars(os.curdir)))
+	@property
 	def userDir(self):		return self._lib.get("userDir") or DirectoryPath(pExpUser("~"))
+	@property
+	def installDir(self):	return self._lib.get("installDir") or sys.argv[0]
 	
 	def __init__(self, *args, **kwargs):
-		self.lib = {}
+		object.__setattr__(self, "_lib", {})
 		for name, path in kwargs.items():
 			if type(path) in [Path, DirectoryPath, FilePath, DisposablePath, PathGroup]:
-				self.lib[name] = path
+				self._lib[name] = path
 			else:
 				try:
 					if pIsFile(path):
-						self.lib[name] = FilePath(path)
+						self._lib[name] = FilePath(path)
 					else:
-						self.lib[name] = DirectoryPath(path)
+						self._lib[name] = DirectoryPath(path)
 				except:
 					# Not acceptable data type for a path.
 					pass
@@ -61,8 +66,9 @@ class PathLibrary:
 		ret = ["Directories in Library at 0x{:0>16}:\n".format(hex(id(self))[2:])]
 		ret.append( f"\t{'workDir':<24} = {self.workDir}")
 		ret.append( f"\t{'userDir':<24} = {self.userDir}")
+		ret.append( f"\t{'installDir':<24} = {self.installDir}")
 		ret.append("")
 		for name in sorted(self._lib.keys()):
-			if name == "workDir" or name == "userDir": continue
+			if name == "workDir" or name == "userDir" or name == "installDir": continue
 			ret.append( f"\t{name:<24} = {self._lib[name]}")
 		return "\n".join(ret)

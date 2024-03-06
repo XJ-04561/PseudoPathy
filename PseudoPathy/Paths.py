@@ -1,19 +1,23 @@
 
 
-
-from _globals import *
-
-""""""
-from PseudoPathy.Group import PathGroup
+try:
+	from PseudoPathy._globals import *
+	from PseudoPathy.Group import PathGroup
+except:
+	from _globals import *
+	from Group import PathGroup
 
 class Path(str):
 	""""""
 
-	def __init__(self) -> None:
-		pass
-
 	def __new__(cls, *paths):
-		obj = super(Path, cls).__new__(cls, pJoin(*paths))
+		if cls is Path:
+			if pIsFile(paths[-1]):
+				obj = FilePath(super(Path, cls).__new__(cls, pJoin(*paths)))
+			else:
+				obj = DirectoryPath(super(Path, cls).__new__(cls, pJoin(*paths)))
+		else:
+			obj = super(Path, cls).__new__(cls, pJoin(*paths))
 		return obj
 	
 	def __add__(self, right):

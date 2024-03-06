@@ -1,7 +1,8 @@
 
-from _globals import *
-
-from PseudoPathy.Paths import *
+try:
+	from PseudoPathy._globals import *
+except:
+	from _globals import *
 
 class PathGroup:
 	""""""
@@ -15,7 +16,11 @@ class PathGroup:
 
 	def __init__(self, *paths : tuple[str], purpose="r"):
 		self.defaultPurpose = purpose
-		self._roots = [p if type(p) is Path else Path(p) for p in paths]
+		try:
+			from PseudoPathy.Paths import Path, FilePath, DirectoryPath, DisposablePath
+		except:
+			from Paths import Path, FilePath, DirectoryPath, DisposablePath
+		self._roots = [p if type(p) in [Path, FilePath, DirectoryPath, DisposablePath] else Path(p) for p in paths]
 
 	def __or__(self, right):
 		if type(right) is PathGroup:

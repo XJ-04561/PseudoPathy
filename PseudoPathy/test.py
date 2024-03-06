@@ -1,7 +1,13 @@
-from PseudoPathy.__init__ import *
+
+import os
+
+try:
+    from PseudoPathy.__init__ import *
+except:
+    from __init__ import *
 
 p1 = Path(os.path.abspath("/"))
-p2 = Path(pExpUser("~"))
+p2 = Path(os.path.expanduser("~"))
 print("p1 = ", p1)
 print("p2 = ", p2)
 
@@ -21,3 +27,6 @@ print("dg1 | dg2 = ", dg1 | dg2)
 
 ex1 = p2 > "myReads.fq"+".log"
 print(ex1)
+
+lib = PathLibrary()
+print(lib)

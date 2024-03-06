@@ -1,8 +1,10 @@
 
-
-from _globals import *
-
-from PseudoPathy.Paths import *
+try:
+	from PseudoPathy._globals import *
+	from PseudoPathy.Paths import *
+except:
+	from _globals import *
+	from Paths import *
 
 def createTemp(path : Path|PathGroup, prefix : str="", ext : str=None):
 	if type(path) not in [Path, DirectoryPath, FilePath, DisposablePath, PathGroup]:
