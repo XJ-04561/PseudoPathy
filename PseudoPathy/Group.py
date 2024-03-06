@@ -69,13 +69,13 @@ class PathGroup:
 	def __str__(self) -> str:
 		return "<PathGroup>\n" + "\n".join(["  {}:d{}{}{}".format(r, *[c if os.access(r, PERMS_LOOKUP_OS[c]) else "-" for c in "rwx"]) for r in self._roots]) + "\n</PathGroup>"
 
-	def __getitem__(self, path : str, purpose:str=None) -> str:
+	def __getitem__(self, path : str, purpose:str=None) -> Path:
 		if purpose is None:
 			purpose = self.defaultPurpose
 		for r in self._roots:
 			if os.path.exists(r > path):
 				if all(os.access(r > path, PERMS_LOOKUP_OS[p]) for p in purpose):
-					return FilePath(r > path) if pIsFile(path) else DirectoryPath(r > path)
+					return Path(r > path)
 		return None
 	
 	def find(self, path : str, purpose:str=None):

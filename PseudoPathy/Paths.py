@@ -19,7 +19,7 @@ class Path(str):
 			else:
 				cls = DirectoryPath
 		
-		obj = super(Path, cls).__new__(cls, pSuperAbs(pJoin(*paths)))
+		obj = super(Path, cls).__new__(cls, pJoin(*paths))
 		obj.defaultPurpose = purpose
 		return obj
 	
