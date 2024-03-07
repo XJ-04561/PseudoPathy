@@ -1,4 +1,5 @@
 
+
 try:
 	from PseudoPathy.Globals import *
 	from PseudoPathy.Paths import Path, FilePath, DirectoryPath, DisposablePath
@@ -54,7 +55,6 @@ class MinimalPathLibrary:
 		return "<{}.{} at 0x{:0>16}>".format(__name__, type(self).__name__, hex(id(self))[2:])
 	
 	def __str__(self):
-		# Works nicely, don't question it.
 		ret = ["Directories in Library at 0x{:0>16}:\n".format(hex(id(self))[2:])]
 		for name in sorted(self._lib.keys()):
 			ret.append( f"\t{name:<24} = {self._lib[name]!s}")
@@ -63,13 +63,13 @@ class MinimalPathLibrary:
 	def access(self, path, mode : str="rwx", create : bool=False):
 		'''Throws appropriate errors if access is not possible.'''
 		
-		if not os.path.exists(path):
+		if not pExists(path):
 			if create:
-				LOGGER.debug("Path does not exist, creating it instead: '{}'".format(path))
+				LOGGER.debug(f"Path does not exist, creating it instead: '{path}'")
 				os.makedirs(path)
 			else:
-				LOGGER.error("Path does not exist: '{}'".format(path))
-				raise FileNotFoundError("Path does not exist: '{}'".format(path))
+				LOGGER.error(f"Path does not exist: '{path}'")
+				raise FileNotFoundError(f"Path does not exist: '{path}'")
 		
 		if not all(os.access(path, PERMS_LOOKUP_OS[c]) for c in mode):
 			LOGGER.error("Missing {perms} permissions for path: '{path}'".format(path=path, perms="+".join([PERMS_LOOKUP[c] for c in mode if not self.perms[path][c]])))
@@ -80,7 +80,7 @@ class MinimalPathLibrary:
 	def accessible(self, path, mode : str="rwx", create : bool=False):
 		'''Returns True/False for the accessibility question.'''
 		
-		if not os.path.exists(path):
+		if not pExists(path):
 			if create:
 				LOGGER.debug("Path does not exist, creating it instead: '{}'".format(path))
 				os.makedirs(path)
@@ -147,7 +147,7 @@ class CommonGroups(MinimalPathLibrary):
 	@property
 	def userDir(self):		return self._lib.get("userDir") or DirectoryPath("~")
 	@property
-	def installDir(self):	return self._lib.get("installDir") or DirectoryPath(sys.argv[0])
+	def installDir(self):	return self._lib.get("installDir") or DirectoryPath(PROGRAM_DIRECTORY)
 
 	def __init__(self):
 		self.locals=PathGroup(self.workDir, self.userDir)
@@ -230,7 +230,7 @@ class PathLibrary(MinimalPathLibrary):
 	@property
 	def userDir(self):		return self._lib.get("userDir") or DirectoryPath("~")
 	@property
-	def installDir(self):	return self._lib.get("installDir") or DirectoryPath(sys.argv[0])
+	def installDir(self):	return self._lib.get("installDir") or DirectoryPath(PROGRAM_DIRECTORY)
 	
 	def __init__(self):
 		object.__setattr__(self, "commonGroups", CommonGroups())
