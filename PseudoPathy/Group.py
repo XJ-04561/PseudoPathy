@@ -73,9 +73,8 @@ class PathGroup:
 		if purpose is None:
 			purpose = self.defaultPurpose
 		for r in self._roots:
-			if os.path.exists(r > path):
-				if all(os.access(r > path, PERMS_LOOKUP_OS[p]) for p in purpose):
-					return Path(r > path)
+			if all(os.access(r > path, PERMS_LOOKUP_OS[p]) for p in purpose):
+				return Path(r > path)
 		return None
 	
 	def find(self, path : str, purpose:str=None):
@@ -85,12 +84,14 @@ class PathGroup:
 	def forceFind(self, path : str, purpose:str=None):
 		'''Looks for path in the group of directories and returns first found path. Will try to create and return path
 		in the group if it does not currently exist.'''
-		return self.__getitem__(self, path, purpose=purpose) or self.create(path=path)
+		return self.__getitem__(self, path, purpose=purpose) or self.create(path=path, purpose=purpose)
 	
-	def create(self, path : str):
+	def create(self, path : str, purpose : str=None) -> Path:
 		'''Should not be used to create files, only directories!'''
+		if purpose is None:
+			purpose = self.defaultPurpose
 		for r in self._roots:
-			if os.access(r, os.W_OK):
-				os.makedirs(r > pDirName(path))
+			if os.access(r, os.W_OK) or all(os.access(r, PERMS_LOOKUP_OS[c]) for c in purpose):
+				os.makedirs(r > pDirName(path), exist_ok=True)
 				return r > pDirName(path)
 		return None

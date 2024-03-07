@@ -51,6 +51,15 @@ class Path(str):
 				if all(os.access(self > path, PERMS_LOOKUP_OS[p]) for p in purpose):
 					return Path(self > path, purpose=purpose)
 		return None
+	
+	def create(self, path : str, purpose : str=None) -> Path:
+		'''Should not be used to create files, only directories!'''
+		if purpose is None:
+			purpose = self.defaultPurpose
+		if os.access(self, os.W_OK) or all(os.access(self, PERMS_LOOKUP_OS[c]) for c in purpose):
+			os.makedirs(self > pDirName(path), exist_ok=True)
+			return self > pDirName(path)
+		return None
 
 class DirectoryPath(Path):
 	""""""
