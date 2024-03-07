@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "PseudoPathy"
+readme = "README.md"
+description = "PseudoPathy: \"Smart\" file- and directory path managing package.."
+version = "1.0"
+requires-python = ">= 3.8"
+license = { file = "LICENSE"}
+keywords = ["File management", "Path management", "Directory management"]
+authors = [
+    {name = "Fredrik Sörensen", email = "fredrik.sorensen@foi.se"}
+]
+maintainers = [
+    {name = "Fredrik Sörensen", email = "fredrik.sorensen@foi.se"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+
+    "Intended Audience :: Developers",
+    "Topic :: Development :: Path Management",
+
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+
+    "Operating System :: OS Independent"
+]
+dependencies = []
+
+
+[project.urls]
+Repository = "https://github.com/XJ-04561/PseudoPathy.git"
