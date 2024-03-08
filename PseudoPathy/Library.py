@@ -237,7 +237,8 @@ class PathLibrary(MinimalPathLibrary):
 	@property
 	def installDir(self):	return self._lib.get("installDir") or DirectoryPath(PROGRAM_DIRECTORY)
 	
-	def __init__(self):
+	def __init__(self, *args, **kwargs):
+		super(PathLibrary, self).__init__(self, *args, **kwargs)
 		object.__setattr__(self, "commonGroups", CommonGroups())
 	
 	def __str__(self):
