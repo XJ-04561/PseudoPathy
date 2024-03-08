@@ -1,7 +1,7 @@
 
 
 import os, shutil, random, sys, __main__
-from functools import cached_property, cache
+from functools import cached_property
 random.seed()
 
 class Path: pass
@@ -29,11 +29,15 @@ class DummyLogger:
 
 
 PERMS_LOOKUP = {"r":"read", "w":"write", "x":"execute"}
+"""Dictionary for lookup of full names for permission type initials using lower case initials as keys. ie. `"r"` -> `"read"`, `"w"` -> `"write"`, or `"x"` -> `"execute"`."""
 PERMS_LOOKUP_OS = {"r":os.R_OK, "w":os.W_OK, "x":os.X_OK}
-MAX_RESULTS = 10**9
+"""Dictionary for lookup of `os` permission types using lower case initials as keys. ie. `"r"`, `"w"`, or `"x"`."""
 LOGGER = DummyLogger()
-DISPOSE = True
-PROGRAM_DIRECTORY = os.path.normpath(os.path.expanduser(os.path.splitroot(__main__.__file__)[0]))
+"""`logging.Loggger` object to use."""
+DISPOSE : bool = True
+"""Whether `DisposablePath` objects should shutil.rmtree(self) when deleted/trash-collected."""
+PROGRAM_DIRECTORY = os.path.normpath(os.path.expanduser(os.path.splitroot(__main__.__file__)[0])) if hasattr(__main__, "__file__") else os.path.normpath(".")
+"""Directory used as `installDir`"""
 
 # OS Alibis
 pSep = os.path.sep

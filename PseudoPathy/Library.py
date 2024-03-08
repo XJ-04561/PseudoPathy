@@ -95,7 +95,11 @@ class MinimalPathLibrary:
 		return True
 
 class CommonGroups(MinimalPathLibrary):
-	"""```python
+	"""
+	Meant to easily form `PathGroup` objects with combinations of the three common directories `workDir`,
+	`userDir`, and `installDir`. If using the python shell `installDir` will be set at time of import
+	to os.path.normpath(".").
+	```python
 	def __init__(self):
 		self.locals=PathGroup(self.workDir, self.userDir)
 		self.personal=PathGroup(self.userDir, self.workDir)
@@ -178,7 +182,8 @@ class PathLibrary(MinimalPathLibrary):
 
 		Contains some default paths for (and called as) `workDir`, `userDir`, `installDir`. All of which can be overriden by
 		assignment.
-		`os` functions are used for default workDir and userDir. `sys` and `os` is used for installDir.
+		`os` functions are used for default workDir and userDir. __main__ is used for installDir, which means that if
+		using the python shell `installDir` will be set at time of import to os.path.normpath(".").
 
 		Also contains a default called `commonGroups`, which is a `MinimalPathLibrary` which only contains `PathGroup`
 		attributes with different order of priorities to look through `workDir`, `userDir`, and `installDir`.
