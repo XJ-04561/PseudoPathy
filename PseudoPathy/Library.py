@@ -20,10 +20,7 @@ class MinimalPathLibrary:
 				self._lib[name] = path
 			else:
 				try:
-					if pIsFile(path):
-						self._lib[name] = FilePath(path)
-					else:
-						self._lib[name] = DirectoryPath(path)
+					self._lib[name] = Path(path)
 				except:
 					# Not acceptable data type for a path.
 					pass
@@ -153,7 +150,9 @@ class CommonGroups(MinimalPathLibrary):
 	@property
 	def installDir(self):	return self._lib.get("installDir") or DirectoryPath(PROGRAM_DIRECTORY)
 
-	def __init__(self):
+	def __init__(self, *args, **kwargs):
+		super(CommonGroups, self).__init__(self, *args, **kwargs)
+
 		self.locals=PathGroup(self.workDir, self.userDir)
 		self.personal=PathGroup(self.userDir, self.workDir)
 		self.shared=PathGroup(self.installDir, self.userDir, self.workDir)
@@ -204,31 +203,6 @@ class PathLibrary(MinimalPathLibrary):
 	"""
 	
 	commonGroups : CommonGroups
-	"""```python
-	def __init__(self):
-		self.locals=PathGroup(self.workDir, self.userDir)
-		self.personal=PathGroup(self.userDir, self.workDir)
-		self.shared=PathGroup(self.installDir, self.userDir, self.workDir)
-		self.withBackup=PathGroup(self.workDir, self.installDir, self.userDir)
-
-		# Acronymized `PathGroup`s of every combination of the three default directories.
-		self.W = PathGroup(self.workDir)
-		self.U = PathGroup(self.userDir)
-		self.I = PathGroup(self.installDir)
-		self.WU = PathGroup(self.workDir, self.userDir)
-		self.UW = PathGroup(self.userDir, self.workDir)
-		self.WI = PathGroup(self.workDir, self.installDir)
-		self.IW = PathGroup(self.installDir, self.workDir)
-		self.UI = PathGroup(self.userDir, self.installDir)
-		self.IU = PathGroup(self.installDir, self.userDir)
-		self.WUI = PathGroup(self.workDir, self.userDir, self.installDir)
-		self.WIU = PathGroup(self.workDir, self.installDir, self.userDir)
-		self.UWI = PathGroup(self.userDir, self.workDir, self.installDir)
-		self.IWU = PathGroup(self.installDir, self.workDir, self.userDir)
-		self.UIW = PathGroup(self.userDir, self.installDir, self.workDir)
-		self.IUW = PathGroup(self.installDir, self.userDir, self.workDir)
-	```
-	"""
 
 	@property
 	def workDir(self):		return self._lib.get("workDir") or DirectoryPath(os.curdir)
@@ -252,13 +226,4 @@ class PathLibrary(MinimalPathLibrary):
 			if name == "workDir" or name == "userDir" or name == "installDir": continue
 			ret.append( f"\t{name:<24} = {self._lib[name]!s}")
 		return "\n".join(ret)
-	
-	
-	def __setitem__(self, key, value):
-		self._lib[key] = value
-	
-	def __getattr__(self, name):
-		return self._lib[name]
-	
-	def __setattr__(self, name, value):
-		self._lib[name] = value
+
