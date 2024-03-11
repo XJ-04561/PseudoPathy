@@ -1,16 +1,22 @@
 
 
-try:
-	from PseudoPathy.Globals import *
-	from PseudoPathy.Group import PathGroup
-except:
-	from PseudoPathy.Globals import *
-	from Group import PathGroup
+from PseudoPathy.Globals import *
+
+class Path: pass
+class PathGroup: pass
 
 class Path(str):
 	""""""
 
 	defaultPurpose : str
+	@property
+	def writable(self): return self.__getitem__("", purpose="w")
+	@property
+	def readable(self): return self.__getitem__("", purpose="r")
+	@property
+	def executable(self): return self.__getitem__("", purpose="x")
+	@property
+	def fullPerms(self): return self.__getitem__("", purpose="rwx")
 
 	def __new__(cls, *paths, purpose="r"):
 		if cls is Path:
@@ -33,9 +39,11 @@ class Path(str):
 		return Path(left, self, purpose=self.defaultPurpose)
 
 	def __or__(self, right : Path|PathGroup):
+		from PseudoPathy.Group import PathGroup
 		return PathGroup(self, *right, purpose=getattr(right, "defaultPurpose", None) or self.defaultPurpose)
 	
 	def __ror__(self, left : Path|PathGroup):
+		from PseudoPathy.Group import PathGroup
 		return PathGroup(*left, self, purpose=self.defaultPurpose or getattr(left, "defaultPurpose", None))
 		
 	def __iter__(self) -> list[Path]:
@@ -47,18 +55,27 @@ class Path(str):
 		else:
 			if purpose is None:
 				purpose = self.defaultPurpose
-			if os.path.exists(self > path):
+			if pExists(self > path):
 				if all(os.access(self > path, PERMS_LOOKUP_OS[p]) for p in purpose):
 					return Path(self > path, purpose=purpose)
+			elif pBackAccess(self > path, os.W_OK):
+				try:
+					pMakeDirs(self > path)
+					return self > path
+				except:
+					pass
 		return None
 	
 	def create(self, path : str, purpose : str=None) -> Path:
 		'''Should not be used to create files, only directories!'''
 		if purpose is None:
 			purpose = self.defaultPurpose
-		if os.access(self, os.W_OK) or all(os.access(self, PERMS_LOOKUP_OS[c]) for c in purpose):
-			os.makedirs(self > pDirName(path), exist_ok=True)
-			return self > pDirName(path)
+		if pBackAccess(self, os.W_OK) or all(os.access(self > pDirName(path), PERMS_LOOKUP_OS[c]) for c in purpose):
+			try:
+				pMakeDirs(self > pDirName(path))
+				return self > pDirName(path)
+			except:
+				pass # Happens if write permission exists for parent directories but not for lower level directories.
 		return None
 
 class DirectoryPath(Path):

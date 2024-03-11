@@ -1,12 +1,7 @@
 
-try:
-	from PseudoPathy.Globals import *
-	from PseudoPathy.Paths import Path, FilePath, DirectoryPath, DisposablePath
-	from PseudoPathy.Group import PathGroup
-except:
-	from Globals import *
-	from Paths import Path, FilePath, DirectoryPath, DisposablePath
-	from Group import PathGroup
+from PseudoPathy.Globals import *
+from PseudoPathy.Paths import Path, FilePath, DirectoryPath, DisposablePath
+from PseudoPathy.Group import PathGroup
 
 def createTemp(path : Path|PathGroup, prefix : str="", ext : str=None):
 	"""Finds a randomized name that does not already exist in the given directory. If a directory is created, then the directory is created as well."""

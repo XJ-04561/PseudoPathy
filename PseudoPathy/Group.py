@@ -1,8 +1,6 @@
 
-try:
-	from PseudoPathy.Globals import *
-except:
-	from PseudoPathy.Globals import *
+from PseudoPathy.Globals import *
+from PseudoPathy.Paths import Path
 
 class PathGroup:
 	""""""
@@ -10,13 +8,13 @@ class PathGroup:
 	_roots : list[Path]
 	
 	@property
-	def writable(self): return self.__getitem__(self, "", purpose="w")
+	def writable(self): return self.__getitem__("", purpose="w")
 	@property
-	def readable(self): return self.__getitem__(self, "", purpose="r")
+	def readable(self): return self.__getitem__("", purpose="r")
 	@property
-	def executable(self): return self.__getitem__(self, "", purpose="x")
+	def executable(self): return self.__getitem__("", purpose="x")
 	@property
-	def fullPerms(self): return self.__getitem__(self, "", purpose="rwx")
+	def fullPerms(self): return self.__getitem__("", purpose="rwx")
 
 	def __init__(self, *paths : tuple[str], purpose="r"):
 		self.defaultPurpose = purpose
@@ -75,23 +73,32 @@ class PathGroup:
 		for r in self._roots:
 			if all(os.access(r > path, PERMS_LOOKUP_OS[p]) for p in purpose):
 				return Path(r > path)
+			elif pBackAccess(r > path, os.W_OK):
+				try:
+					pMakeDirs(r > path)
+					return r > path
+				except:
+					pass
 		return None
 	
 	def find(self, path : str, purpose:str=None):
 		'''Looks for path in the group of directories and returns first found path.'''
-		return self.__getitem__(self, path, purpose=purpose if purpose is not None else self.defaultPurpose)
+		return self.__getitem__(path, purpose=purpose if purpose is not None else self.defaultPurpose)
 
 	def forceFind(self, path : str, purpose:str=None):
 		'''Looks for path in the group of directories and returns first found path. Will try to create and return path
 		in the group if it does not currently exist.'''
-		return self.__getitem__(self, path, purpose=purpose) or self.create(path=path, purpose=purpose)
+		return self.__getitem__(path, purpose=purpose) or self.create(path=path, purpose=purpose)
 	
 	def create(self, path : str, purpose : str=None) -> Path:
 		'''Should not be used to create files, only directories!'''
 		if purpose is None:
 			purpose = self.defaultPurpose
 		for r in self._roots:
-			if os.access(r, os.W_OK) or all(os.access(r, PERMS_LOOKUP_OS[c]) for c in purpose):
-				os.makedirs(r > pDirName(path), exist_ok=True)
-				return r > pDirName(path)
+			if pBackAccess(r, os.W_OK) or all(os.access(r > pDirName(path), PERMS_LOOKUP_OS[c]) for c in purpose):
+				try:
+					pMakeDirs(r > pDirName(path))
+					return r > pDirName(path)
+				except:
+					pass # Happens if write permission exists for parent directories but not for lower level directories.
 		return None

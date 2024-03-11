@@ -1,13 +1,8 @@
 
 
-try:
-	from PseudoPathy.Globals import *
-	from PseudoPathy.Paths import Path, FilePath, DirectoryPath, DisposablePath
-	from PseudoPathy.Group import PathGroup
-except:
-	from PseudoPathy.Globals import *
-	from Paths import Path, FilePath, DirectoryPath, DisposablePath
-	from Group import PathGroup
+from PseudoPathy.Globals import *
+from PseudoPathy.Paths import Path, FilePath, DirectoryPath, DisposablePath
+from PseudoPathy.Group import PathGroup
 
 class MinimalPathLibrary:
 	"""Same functionalities as PathLibrary, but with no default directories and groups."""
@@ -63,7 +58,7 @@ class MinimalPathLibrary:
 		if not pExists(path):
 			if create:
 				LOGGER.debug(f"Path does not exist, creating it instead: '{path}'")
-				os.makedirs(path)
+				pMakeDirs(path)
 			else:
 				LOGGER.error(f"Path does not exist: '{path}'")
 				raise FileNotFoundError(f"Path does not exist: '{path}'")
@@ -80,7 +75,7 @@ class MinimalPathLibrary:
 		if not pExists(path):
 			if create:
 				LOGGER.debug("Path does not exist, creating it instead: '{}'".format(path))
-				os.makedirs(path)
+				pMakeDirs(path)
 			else:
 				LOGGER.debug("Path does not exist: '{}'".format(path))
 				return False
@@ -144,11 +139,18 @@ class CommonGroups(MinimalPathLibrary):
 	IUW : PathGroup
 
 	@property
-	def workDir(self):		return self._lib.get("workDir") or DirectoryPath(os.curdir)
+	def workDir(self):		return self._lib.get("workDir") or DirectoryPath(pAbs(os.curdir))
 	@property
 	def userDir(self):		return self._lib.get("userDir") or DirectoryPath("~")
 	@property
 	def installDir(self):	return self._lib.get("installDir") or DirectoryPath(PROGRAM_DIRECTORY)
+
+	@workDir.setter
+	def workDir(self, path):	self._lib["workDir"] = Path(path)
+	@userDir.setter
+	def userDir(self, path):	self._lib["userDir"] = Path(path)
+	@installDir.setter
+	def installDir(self, path):	self._lib["installDir"] = Path(path)
 
 	def __init__(self, *args, **kwargs):
 		super(CommonGroups, self).__init__(self, *args, **kwargs)
@@ -205,11 +207,18 @@ class PathLibrary(MinimalPathLibrary):
 	commonGroups : CommonGroups
 
 	@property
-	def workDir(self):		return self._lib.get("workDir") or DirectoryPath(os.curdir)
+	def workDir(self):		return self._lib.get("workDir") or DirectoryPath(pAbs(os.curdir))
 	@property
 	def userDir(self):		return self._lib.get("userDir") or DirectoryPath("~")
 	@property
 	def installDir(self):	return self._lib.get("installDir") or DirectoryPath(PROGRAM_DIRECTORY)
+	
+	@workDir.setter
+	def workDir(self, path):	self.commonGroups.workDir = self._lib["workDir"] = Path(path)
+	@userDir.setter
+	def userDir(self, path):	self.commonGroups.userDir = self._lib["userDir"] = Path(path)
+	@installDir.setter
+	def installDir(self, path):	self.commonGroups.installDir = self._lib["installDir"] = Path(path)
 	
 	def __init__(self, *args, **kwargs):
 		super(PathLibrary, self).__init__(self, *args, **kwargs)
