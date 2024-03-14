@@ -25,9 +25,9 @@ def createTemp(dir : Path|PathGroup=None, prefix : str=None, suffix : str=None, 
 		dir = dir.writeable
 	
 	if ext is None:
-		outPath = DirectoryPath(tempfile.TemporaryDirectory(suffix=suffix, prefix=prefix, dir=dir, delete=Globals.DISPOSE))
+		outPath = DirectoryPath(tempfile.TemporaryDirectory(suffix=suffix, prefix=prefix, dir=dir))
 	else:
-		outPath = tempfile.TemporaryFile(suffix=suffix+"."+ext, prefix=prefix, dir=dir, delete=Globals.DISPOSE)
+		outPath = tempfile.TemporaryFile(suffix=suffix+"."+ext, prefix=prefix, dir=dir)
 	
 	return outPath
 
