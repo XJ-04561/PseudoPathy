@@ -29,10 +29,13 @@ class MinimalPathLibrary:
 			return False
 	
 	def __iter__(self):
-		return object.__getattribute__(self, "_lib").items()
+		return iter(object.__getattribute__(self, "_lib").items())
 
 	def __getitem__(self, key):
-		return self.__getattribute__(key)
+		try:
+			return self.__getattribute__(key)
+		except AttributeError:
+			return self.__getattr__(key)
 	
 	def __setitem__(self, key, value):
 		self._lib[key] = value
@@ -41,7 +44,12 @@ class MinimalPathLibrary:
 		return self._lib.get(name)
 	
 	def __setattr__(self, name, value):
+		if hasattr(self, name):
+			object.__setattr__(self, name, value)
 		self._lib[name] = value
+
+	def __delitem__(self, key):
+		del self._lib[key]
 
 	def __repr__(self):
 		return "<{}.{} at 0x{:0>16}>".format(__name__, type(self).__name__, hex(id(self))[2:])
@@ -51,6 +59,9 @@ class MinimalPathLibrary:
 		for name in sorted(self._lib.keys()):
 			ret.append( f"\t{name:<24} = {self._lib[name]!s}")
 		return "\n".join(ret)
+	
+	def __len__(self):
+		return len(self._lib)
 
 	def access(self, path, mode : str="rwx", create : bool=False):
 		'''Throws appropriate errors if access is not possible.'''

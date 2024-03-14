@@ -107,3 +107,14 @@ class DisposablePath(Path):
 				shutil.rmtree(self, ignore_errors=True)
 			except:
 				LOGGER.warning(f"Failed to remove content of directory: '{self}'")
+
+class PathList(list):
+	def __new__(cls, *data):
+		obj = super(PathList, cls).__new__(cls, *data)
+		return obj
+	
+	def __str__(self):
+		return " ".join(self)
+	
+	def __format__(self, format_spec):
+		return " ".join(self)
