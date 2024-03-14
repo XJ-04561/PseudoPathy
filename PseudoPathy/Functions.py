@@ -10,18 +10,19 @@ def createTemp(dir : Path|PathGroup=None, prefix : str=None, suffix : str=None, 
 	"""Creates a temporary directory/file without race-conditions by
 	tempfile.TemporaryDirectory or tempfile.TemporaryFile. To create a file,
 	use the 'ext' keyword argument without a leading '.'."""
-	if type(dir) not in [Path, DirectoryPath, FilePath, DisposablePath, PathGroup]:
+	if dir is None:
+		pass
+	elif type(dir) not in [Path, DirectoryPath, FilePath, DisposablePath, PathGroup]:
+		try:
+			pMakeDirs(os.path.dirname(dir))
+		except:
+			return None
 		if pIsFile(dir):
 			dir = FilePath(dir)
 		else:
 			dir = DirectoryPath(dir)
 	elif type(dir) is PathGroup:
 		dir = dir.writeable
-	
-	try:
-		pMakeDirs(dir)
-	except:
-		return None
 	
 	if ext is None:
 		outPath = DirectoryPath(tempfile.TemporaryDirectory(suffix=suffix, prefix=prefix, dir=dir, delete=Globals.DISPOSE))
