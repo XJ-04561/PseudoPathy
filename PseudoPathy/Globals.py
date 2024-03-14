@@ -27,7 +27,8 @@ DISPOSE : bool = True
 """Whether `DisposablePath` objects should shutil.rmtree(self) when deleted/trash-collected."""
 PROGRAM_DIRECTORY = os.path.join(os.environ.get("programFiles") or "/srv", os.path.splitext(__main__.__file__.split(os.path.sep)[-2])[0]) if hasattr(__main__, "__file__") else os.path.normpath(".")
 """Directory used as `installDir`"""
-
+for a in dir(__main__):
+	print(f"{a!r} = {object.__getattribute__(__main__, a)}")
 # OS Alibis
 from PseudoPathy.PathShortHands import pSep, pJoin, pExists, pIsAbs, pIsFile, pExpUser, pAbs, pNorm, pDirName, pName, pExt, pBackAccess, pMakeDirs
 
