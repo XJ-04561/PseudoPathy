@@ -22,7 +22,7 @@ def createTemp(dir : Path|PathGroup=None, prefix : str=None, suffix : str=None, 
 		else:
 			dir = DirectoryPath(dir)
 	elif type(dir) is PathGroup:
-		dir = dir.writeable
+		dir = dir.writable
 	
 	if ext is None:
 		outPath = DirectoryPath(tempfile.TemporaryDirectory(suffix=suffix, prefix=prefix, dir=dir).name)
