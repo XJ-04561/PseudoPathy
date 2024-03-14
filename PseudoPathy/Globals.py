@@ -25,7 +25,7 @@ LOGGER = DummyLogger()
 """`logging.Loggger` object to use."""
 DISPOSE : bool = True
 """Whether `DisposablePath` objects should shutil.rmtree(self) when deleted/trash-collected."""
-PROGRAM_DIRECTORY = (os.path.join(os.environ.get("programFiles"), os.path.splitext(__main__.__file__.split(os.path.sep)[-2])[0]) or os.path.join("/srv", os.path.splitext(__main__.__file__.split(os.path.sep)[-2])[0])) if hasattr(__main__, "__file__") else os.path.normpath(".")
+PROGRAM_DIRECTORY = os.path.join(os.environ.get("programFiles") or "/srv", os.path.splitext(__main__.__file__.split(os.path.sep)[-2])[0]) if hasattr(__main__, "__file__") else os.path.normpath(".")
 """Directory used as `installDir`"""
 
 # OS Alibis
