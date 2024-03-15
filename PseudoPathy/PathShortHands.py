@@ -63,9 +63,16 @@ pExt = lambda path: os.path.splitext(path)[1]
 pAccess = lambda path, mode : os.access(path, mode=sum(PERMS_LOOKUP_OS[c] for c in mode))
 """`lambda path, mode : os.access(path, mode=sum(PERMS_LOOKUP_OS[c] for c in mode))`"""
 
-pBackAccess = lambda path, perms : any(pAccess(path.rsplit(os.path.sep,i+1)[0], perms) for i in range(len(path.split(os.path.sep))))
-"""`lambda path, perms : any(all(os.access(path.rsplit(os.path.sep,i+1)[0], perm) for perm in perms) for i in range(len(path)))`
-Checks if os.access is true for all perms, but if it isn't, then it checks the parent directory, this repeats until a parent directory passes."""
+def pBackAccess(path : str, perms : str):
+    """```python
+    def pBackAccess(path : str, perms : str):
+        root ,*parts = path.split(os.path.sep)
+        return any(pAccess(pJoin(root, *(parts[:i])), perms) for i in range(len(parts), 0, -1))
+    ```
+    Checks if os.access is true for all perms, but if it isn't, then it checks the parent directory, this repeats until a parent directory passes."""
+    root ,*parts = path.split(os.path.sep)
+    return any(pAccess(pJoin(root, *(parts[:i])), perms) for i in range(len(parts), 0, -1))
+
 
 pMakeDirs = lambda path: os.makedirs(path, mode=711, exist_ok=True)
 """`lambda path: os.makedirs(path, mode=711, exist_ok=True)`"""

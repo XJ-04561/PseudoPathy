@@ -99,6 +99,9 @@ class PathGroup:
 				try:
 					pMakeDirs(r > path)
 					return r > path
-				except:
-					pass # Happens if write permission exists for parent directories but not for lower level directories.
+				except Exception as e:
+					# Happens if write permission exists for parent directories but not for lower level directories.
+					LOGGER.exception(e, stack_level=logging.DEBUG)
+			else:
+				LOGGER.debug(f"pBackAccess({r}, \"w\") is False")
 		return None

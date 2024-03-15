@@ -1,6 +1,6 @@
 
 
-import os, shutil, random, sys, __main__
+import os, shutil, random, sys, __main__, logging
 from functools import cached_property
 random.seed()
 
@@ -15,6 +15,7 @@ class DummyLogger:
 	def warning(self, *args, **kwargs): pass
 	def error(self, *args, **kwargs): pass
 	def critical(self, *args, **kwargs): pass
+	def exception(self, *args, **kwargs): pass
 
 
 LOGGER = DummyLogger()
