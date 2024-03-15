@@ -70,7 +70,11 @@ def pBackAccess(path : str, perms : str):
         return any(pAccess(pJoin(root, *(parts[:i])), perms) for i in range(len(parts), 0, -1))
     ```
     Checks if os.access is true for all perms, but if it isn't, then it checks the parent directory, this repeats until a parent directory passes."""
-    root ,*parts = path.split(os.path.sep)
+    if path.startswith(os.path.sep):
+        root ,*parts = path.split(os.path.sep)
+        root = os.path.sep
+    else:
+        root ,*parts = path.split(os.path.sep)
     return any(pAccess(pJoin(root, *(parts[:i])), perms) for i in range(len(parts), 0, -1))
 
 
