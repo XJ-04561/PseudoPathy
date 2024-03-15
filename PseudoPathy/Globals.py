@@ -25,8 +25,12 @@ LOGGER = DummyLogger()
 """`logging.Loggger` object to use."""
 DISPOSE : bool = True
 """Whether `DisposablePath` objects should shutil.rmtree(self) when deleted/trash-collected."""
-PROGRAM_DIRECTORY = os.path.join(os.environ.get("programFiles") or "/srv", os.path.splitext(os.path.basename(__main__.__file__))[0]) if hasattr(__main__, "__file__") else os.path.normpath(".")
+
+head, tail = os.path.split(__main__.__file__)
+mainName = os.path.basename(head if tail == "__main__.py" else tail)
+PROGRAM_DIRECTORY = os.path.join(os.environ.get("programFiles") or "/srv", os.path.splitext(mainName)[0]) if hasattr(__main__, "__file__") else os.path.normpath(".")
 """Directory used as `installDir`"""
+del head, tail, mainName
 
 # OS Alibis
 from PseudoPathy.PathShortHands import pSep, pJoin, pExists, pIsAbs, pIsFile, pExpUser, pAbs, pNorm, pDirName, pName, pExt, pBackAccess, pMakeDirs
