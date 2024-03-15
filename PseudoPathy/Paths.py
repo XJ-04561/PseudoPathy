@@ -56,24 +56,22 @@ class Path(str):
 			if purpose is None:
 				purpose = self.defaultPurpose
 			if pExists(self > path):
-				if all(os.access(self > path, PERMS_LOOKUP_OS[p]) for p in purpose):
+				if pAccess(self > path, purpose):
 					return Path(self > path, purpose=purpose)
-			elif pBackAccess(self > path, os.W_OK):
-				try:
-					pMakeDirs(self > path)
-					return self > path
-				except:
-					pass
 		return None
 	
 	def create(self, path : str, purpose : str=None) -> Path:
 		'''Should not be used to create files, only directories!'''
 		if purpose is None:
 			purpose = self.defaultPurpose
-		if pBackAccess(self, os.W_OK) or all(os.access(self > pDirName(path), PERMS_LOOKUP_OS[c]) for c in purpose):
+	
+		if pAccess(self > path, purpose):
+			return self > path
+		
+		elif pBackAccess(self, os.W_OK): # Try to make a path for purpose(s).
 			try:
-				pMakeDirs(self > pDirName(path))
-				return self > pDirName(path)
+				pMakeDirs(self > path)
+				return self > path
 			except:
 				pass # Happens if write permission exists for parent directories but not for lower level directories.
 		return None

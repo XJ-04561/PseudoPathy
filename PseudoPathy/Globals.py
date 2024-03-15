@@ -17,10 +17,6 @@ class DummyLogger:
 	def critical(self, *args, **kwargs): pass
 
 
-PERMS_LOOKUP = {"r":"read", "w":"write", "x":"execute"}
-"""Dictionary for lookup of full names for permission type initials using lower case initials as keys. ie. `"r"` -> `"read"`, `"w"` -> `"write"`, or `"x"` -> `"execute"`."""
-PERMS_LOOKUP_OS = {"r":os.R_OK, "w":os.W_OK, "x":os.X_OK}
-"""Dictionary for lookup of `os` permission types using lower case initials as keys. ie. `"r"`, `"w"`, or `"x"`."""
 LOGGER = DummyLogger()
 """`logging.Loggger` object to use."""
 DISPOSE : bool = True
@@ -33,7 +29,7 @@ PROGRAM_DIRECTORY = os.path.join(os.environ.get("programFiles") or "/srv", os.pa
 del head, tail, mainName
 
 # OS Alibis
-from PseudoPathy.PathShortHands import pSep, pJoin, pExists, pIsAbs, pIsFile, pExpUser, pAbs, pNorm, pDirName, pName, pExt, pBackAccess, pMakeDirs
+from PseudoPathy.PathShortHands import pSep, pJoin, pExists, pIsAbs, pIsFile, pExpUser, pAbs, pNorm, pDirName, pName, pExt, pAccess, pBackAccess, pMakeDirs, PERMS_LOOKUP_OS, PERMS_LOOKUP
 
 ## Library Globals
 

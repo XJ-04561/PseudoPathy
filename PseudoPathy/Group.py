@@ -70,20 +70,15 @@ class PathGroup:
 	def __getitem__(self, path : str, purpose:str=None) -> Path:
 		if purpose is None:
 			purpose = self.defaultPurpose
+		
 		for r in self._roots:
-			if all(os.access(r > path, PERMS_LOOKUP_OS[p]) for p in purpose):
+			if pAccess(r > path, purpose):
 				return Path(r > path)
-			elif pBackAccess(r > path, os.W_OK):
-				try:
-					pMakeDirs(r > path)
-					return r > path
-				except:
-					pass
 		return None
 	
 	def find(self, path : str, purpose:str=None):
 		'''Looks for path in the group of directories and returns first found path.'''
-		return self.__getitem__(path, purpose=purpose if purpose is not None else self.defaultPurpose)
+		return self.__getitem__(path, purpose=purpose)
 
 	def forceFind(self, path : str, purpose:str=None):
 		'''Looks for path in the group of directories and returns first found path. Will try to create and return path
@@ -94,11 +89,16 @@ class PathGroup:
 		'''Should not be used to create files, only directories!'''
 		if purpose is None:
 			purpose = self.defaultPurpose
+		# Try to find existing path for purpose(s).
 		for r in self._roots:
-			if pBackAccess(r, os.W_OK) or all(os.access(r > pDirName(path), PERMS_LOOKUP_OS[c]) for c in purpose):
+			if pAccess(r > path, purpose):
+				return r > path
+		# Try to make a path for purpose(s).
+		for r in self._roots:
+			if pBackAccess(r, os.W_OK):
 				try:
-					pMakeDirs(r > pDirName(path))
-					return r > pDirName(path)
+					pMakeDirs(r > path)
+					return r > path
 				except:
 					pass # Happens if write permission exists for parent directories but not for lower level directories.
 		return None

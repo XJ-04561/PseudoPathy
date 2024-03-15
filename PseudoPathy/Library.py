@@ -234,6 +234,9 @@ class PathLibrary(MinimalPathLibrary):
 	def __init__(self, *args, **kwargs):
 		super(PathLibrary, self).__init__(self, *args, **kwargs)
 		object.__setattr__(self, "commonGroups", CommonGroups())
+		self.workDir.create("", "rw")
+		self.userDir.create("", "rw")
+		self.installDir.create("", "rw")
 	
 	def __str__(self):
 		# Works nicely, don't question it.
