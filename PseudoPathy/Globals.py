@@ -4,21 +4,8 @@ import os, shutil, random, sys, __main__, logging
 from functools import cached_property
 random.seed()
 
+LOGGER = logging.Logger("PseudoPathy")
 
-
-class DummyLogger:
-	"""A dummy logger for all Path derived objects to log to, except it does not
-	perform logging. To enable logging you simply assign a working logger to the
-	'logger' attribute of the Path class."""
-	def debug(self, *args, **kwargs): pass
-	def info(self, *args, **kwargs): pass
-	def warning(self, *args, **kwargs): pass
-	def error(self, *args, **kwargs): pass
-	def critical(self, *args, **kwargs): pass
-	def exception(self, *args, **kwargs): pass
-
-
-LOGGER = DummyLogger()
 """`logging.Loggger` object to use."""
 DISPOSE : bool = True
 """Whether `DisposablePath` objects should shutil.rmtree(self) when deleted/trash-collected."""
