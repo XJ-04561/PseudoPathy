@@ -95,7 +95,7 @@ class PathGroup:
 				return r > path
 		# Try to make a path for purpose(s).
 		for r in self._roots:
-			if pBackAccess(r, os.W_OK):
+			if pBackAccess(r, "w"):
 				try:
 					pMakeDirs(r > path)
 					return r > path

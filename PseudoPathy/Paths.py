@@ -68,7 +68,7 @@ class Path(str):
 		if pAccess(self > path, purpose):
 			return self > path
 		
-		elif pBackAccess(self, os.W_OK): # Try to make a path for purpose(s).
+		elif pBackAccess(self, "w"): # Try to make a path for purpose(s).
 			try:
 				pMakeDirs(self > path)
 				return self > path
