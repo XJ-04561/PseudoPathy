@@ -2,19 +2,32 @@
 from PseudoPathy.Globals import *
 from PseudoPathy.Paths import Path
 
+import re
+formatPattern = re.compile("^(?P<filler>.)??(?P<direction>[<^>])?(?P<length>[0-9]+)?[.]?(?P<precision>[0-9]+)?(?P<type>[a-z])?$")
+
 class PathGroup:
 	""""""
 
 	_roots : list[Path]
+	defaultPurpose : str
+
+	writable : Path
+	"""The first path with writing permissions. If none exists, then tries to create one (Given that at least one path is not existent on the system)"""
+	readable : Path
+	"""The first path with reading permissions."""
+	executable : Path
+	"""The first path with execution permissions."""
+	fullPerms : Path
+	"""The first path with full permissions. If none exists, then tries to create one (Given that at least one path is not existent on the system)"""
 	
 	@property
-	def writable(self): return self.__getitem__("", purpose="w")
+	def writable(self): return self.create(purpose="w")
 	@property
-	def readable(self): return self.__getitem__("", purpose="r")
+	def readable(self): return self.find(purpose="r")
 	@property
-	def executable(self): return self.__getitem__("", purpose="x")
+	def executable(self): return self.find(purpose="x")
 	@property
-	def fullPerms(self): return self.__getitem__("", purpose="rwx")
+	def fullPerms(self): return self.create(purpose="rwx")
 
 	def __init__(self, *paths : tuple[str], purpose="r"):
 		self.defaultPurpose = purpose
@@ -65,7 +78,33 @@ class PathGroup:
 		return iter(self._roots)
 
 	def __str__(self) -> str:
-		return "<PathGroup>\n" + "\n".join(["  {}:d{}{}{}".format(r, *[c if os.access(r, PERMS_LOOKUP_OS[c]) else "-" for c in "rwx"]) for r in self._roots]) + "\n</PathGroup>"
+		ret = ["PathGroup:"]
+		for root in self._roots:
+			d = "d" if os.path.isdir(root) or (not os.path.isfile(root) and "." not in os.path.split(root.rstrip(os.path.sep))[-1]) else "-"
+			
+			r = "r" if os.access(root, PERMS_LOOKUP_OS["r"]) else "-"
+			w = "w" if os.access(root, PERMS_LOOKUP_OS["w"]) else "-"
+			x = "x" if os.access(root, PERMS_LOOKUP_OS["x"]) else "-"
+
+			ret.append(f"  {d}{r}{w}{x} {root}")
+		return "\n".join(ret)
+	
+	def __format__(self, format_spec) -> str:
+		ret = ["PathGroup:"]
+		match = formatPattern.match(format_spec)
+		fill = match["filler"] or "  "
+		length = match["length"] or 1
+		length = int(length)
+
+		for root in self._roots:
+			d = "d" if os.path.isdir(root) or (not os.path.isfile(root) and "." not in os.path.split(root.rstrip(os.path.sep))[-1]) else "-"
+			
+			r = "r" if pAccess(root, "r") else "-"
+			w = "w" if pAccess(root, "w") else "-"
+			x = "x" if pAccess(root, "x") else "-"
+
+			ret.append(f"{fill*length}{d}{r}{w}{x} {root}")
+		return "\n".join(ret)
 
 	def __getitem__(self, path : str, purpose:str=None) -> Path:
 		if purpose is None:
@@ -76,16 +115,16 @@ class PathGroup:
 				return Path(r > path)
 		return None
 	
-	def find(self, path : str, purpose:str=None):
+	def find(self, path : str="", purpose:str=None):
 		'''Looks for path in the group of directories and returns first found path.'''
 		return self.__getitem__(path, purpose=purpose)
 
-	def forceFind(self, path : str, purpose:str=None):
+	def forceFind(self, path : str="", purpose:str=None):
 		'''Looks for path in the group of directories and returns first found path. Will try to create and return path
 		in the group if it does not currently exist.'''
 		return self.__getitem__(path, purpose=purpose) or self.create(path=path, purpose=purpose)
 	
-	def create(self, path : str, purpose : str=None) -> Path:
+	def create(self, path : str="", purpose : str=None) -> Path:
 		'''Should not be used to create files, only directories!'''
 		if purpose is None:
 			purpose = self.defaultPurpose

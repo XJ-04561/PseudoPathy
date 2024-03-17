@@ -57,7 +57,16 @@ class MinimalPathLibrary:
 	def __str__(self):
 		ret = ["Directories in Library at 0x{:0>16}:\n".format(hex(id(self))[2:])]
 		for name in sorted(self._lib.keys()):
-			ret.append( f"\t{name:<24} = {self._lib[name]!s}")
+			p = self._lib[name]
+			if type(p) is PathGroup:
+				ret.append(f"  |||| {name:<20} {p:<28}")
+			else:
+				d = "d" if os.path.isdir(p) or (not os.path.isfile(p) and "." not in os.path.split(p.rstrip(os.path.sep))[-1]) else "-"
+				
+				r = "r" if pAccess(p, "r") else "-"
+				w = "w" if pAccess(p, "w") else "-"
+				x = "x" if pAccess(p, "x") else "-"
+				ret.append(f"  {d+r+w+x} {name:<20} {p:<28}")
 		return "\n".join(ret)
 	
 	def __len__(self):
@@ -239,14 +248,30 @@ class PathLibrary(MinimalPathLibrary):
 		self.installDir.create("", "rw")
 	
 	def __str__(self):
-		# Works nicely, don't question it.
-		ret = ["Directories in Library at 0x{:0>16}:\n".format(hex(id(self))[2:])]
-		ret.append( f"\t{'workDir':<24} = {self.workDir!s}")
-		ret.append( f"\t{'userDir':<24} = {self.userDir!s}")
-		ret.append( f"\t{'installDir':<24} = {self.installDir!s}")
+		""""""
+		ret = [f"Directories in Library at 0x{hex(id(self))[2:]:0>16}:"]
+		for name in ["workDir", "userDir", "installDir"]:
+			p = self.__getattribute__(name)
+			if type(p) is PathGroup:
+				ret.append(f"  |||| {name:<20} {p:<28}")
+			else:
+				d = "d" if os.path.isdir(p) or (not os.path.isfile(p) and "." not in os.path.split(p.rstrip(os.path.sep))[-1]) else "-"
+				
+				r = "r" if pAccess(p, "r") else "-"
+				w = "w" if pAccess(p, "w") else "-"
+				x = "x" if pAccess(p, "x") else "-"
+				ret.append(f"  {d+r+w+x} {name:<20} {p:<28}")
 		ret.append("")
 		for name in sorted(self._lib.keys()):
-			if name == "workDir" or name == "userDir" or name == "installDir": continue
-			ret.append( f"\t{name:<24} = {self._lib[name]!s}")
+			p = self._lib[name]
+			if type(p) is PathGroup:
+				ret.append(f"  |||| {name:<20} {p:<28}")
+			else:
+				d = "d" if os.path.isdir(p) or (not os.path.isfile(p) and "." not in os.path.split(p.rstrip(os.path.sep))[-1]) else "-"
+				
+				r = "r" if pAccess(p, "r") else "-"
+				w = "w" if pAccess(p, "w") else "-"
+				x = "x" if pAccess(p, "x") else "-"
+				ret.append(f"  {d+r+w+x} {name:<20} {p:<28}")
 		return "\n".join(ret)
 

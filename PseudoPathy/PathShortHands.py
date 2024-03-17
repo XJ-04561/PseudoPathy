@@ -70,12 +70,9 @@ def pBackAccess(path : str, perms : str):
         return any(pAccess(pJoin(root, *(parts[:i])), perms) for i in range(len(parts), 0, -1))
     ```
     Checks if os.access is true for all perms, but if it isn't, then it checks the parent directory, this repeats until a parent directory passes."""
-    if path.startswith(os.path.sep):
-        root ,*parts = path.split(os.path.sep)
-        root = os.path.sep
-    else:
-        root ,*parts = path.split(os.path.sep)
-    return any(pAccess(pJoin(root, *(parts[:i])), perms) for i in range(len(parts), 0, -1))
+    root ,*parts = path.split(os.path.sep)
+    # separator required between root and the rest. Otherwise you get: os.path.join("C:", "Users") -> 'C:Users' or os.path.join("", "srv") -> "srv"
+    return any(pAccess(pJoin(root, os.path.sep, *(parts[:-i])), perms) for i in range(len(parts)+1))
 
 
 pMakeDirs = lambda path: os.makedirs(path, mode=711, exist_ok=True)

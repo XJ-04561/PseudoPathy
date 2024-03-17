@@ -9,14 +9,23 @@ class Path(str):
 	""""""
 
 	defaultPurpose : str
+	writable : Path
+	"""The first path with writing permissions. If none exists, then tries to create one (Given that at least one path is not existent on the system)"""
+	readable : Path
+	"""The first path with reading permissions."""
+	executable : Path
+	"""The first path with execution permissions."""
+	fullPerms : Path
+	"""The first path with full permissions. If none exists, then tries to create one (Given that at least one path is not existent on the system)"""
+	
 	@property
-	def writable(self): return self.__getitem__("", purpose="w")
+	def writable(self): return self.create(purpose="w")
 	@property
 	def readable(self): return self.__getitem__("", purpose="r")
 	@property
 	def executable(self): return self.__getitem__("", purpose="x")
 	@property
-	def fullPerms(self): return self.__getitem__("", purpose="rwx")
+	def fullPerms(self): return self.create(purpose="rwx")
 
 	def __new__(cls, *paths, purpose="r"):
 		if cls is Path:
@@ -49,6 +58,9 @@ class Path(str):
 	def __iter__(self) -> list[Path]:
 		return iter([self])
 	
+	def __contains__(self, item):
+		return pExists(self > item)
+	
 	def __getitem__(self, path : str, purpose:str=None) -> str:
 		if type(path) in [slice, int]:
 			return str.__getitem__(self, path)
@@ -60,7 +72,7 @@ class Path(str):
 					return Path(self > path, purpose=purpose)
 		return None
 	
-	def create(self, path : str, purpose : str=None) -> Path:
+	def create(self, path : str="", purpose : str=None) -> Path:
 		'''Should not be used to create files, only directories!'''
 		if purpose is None:
 			purpose = self.defaultPurpose
@@ -87,7 +99,7 @@ class FilePath(Path):
 	ext : str
 	@property
 	def ext(self):
-		return "."+self.rpartition(".")[-1]
+		return self.rpartition(".")[-1]
 	
 	def __lshift__(self, value : str):
 		"""Creates a version of the `FilePath` with the right string as the file extension. This changes the text
