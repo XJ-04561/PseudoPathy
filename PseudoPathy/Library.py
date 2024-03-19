@@ -59,7 +59,7 @@ class MinimalPathLibrary:
 		for name in sorted(self._lib.keys()):
 			p = self._lib[name]
 			if type(p) is PathGroup:
-				ret.append(f"  |||| {name:<20} {p:<28}")
+				ret.append(f"  |||| {name:<20} {p:<30}")
 			else:
 				d = "d" if os.path.isdir(p) or (not os.path.isfile(p) and "." not in os.path.split(p.rstrip(os.path.sep))[-1]) else "-"
 				

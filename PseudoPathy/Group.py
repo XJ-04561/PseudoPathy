@@ -92,7 +92,7 @@ class PathGroup:
 	def __format__(self, format_spec) -> str:
 		ret = ["PathGroup:"]
 		match = formatPattern.match(format_spec)
-		fill = match["filler"] or "  "
+		fill = match["filler"] or " "
 		length = match["length"] or 1
 		length = int(length)
 

@@ -74,6 +74,15 @@ def pBackAccess(path : str, perms : str):
     # separator required between root and the rest. Otherwise you get: os.path.join("C:", "Users") -> 'C:Users' or os.path.join("", "srv") -> "srv"
     return any(pAccess(pJoin(root, os.path.sep, *(parts[:-i])), perms) for i in range(len(parts)+1))
 
-
-pMakeDirs = lambda path: os.makedirs(path, mode=711, exist_ok=True)
-"""`lambda path: os.makedirs(path, mode=711, exist_ok=True)`"""
+def pMakeDirs(path, mode=7):
+    """```python
+    os.makedirs(path, mode=mode, exist_ok=True)
+    if not os.access(path, mode=mode):
+        os.chmod(path, mode=mode)
+    ```
+    """
+    os.makedirs(path, mode=mode*100, exist_ok=True)
+    if not os.access(path, mode=mode):
+        os.chmod(path, mode=mode*110)
+        if not os.access(path, mode=mode):
+            os.chmod(path, mode=mode*111)
