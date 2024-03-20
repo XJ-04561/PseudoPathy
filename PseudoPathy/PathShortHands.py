@@ -2,18 +2,37 @@
 # OS Alibis
 ```python
 pSep = os.path.sep
+
 pJoin = os.path.join
+
 pExists = os.path.exists
+
 pIsAbs = lambda path: os.path.isabs(os.path.normpath(os.path.expanduser(path)))
+
 pIsFile = os.path.isfile
+
 pExpUser = os.path.expanduser
+
 pAbs = lambda path: os.path.abspath(os.path.expanduser(path))
+
 pNorm = lambda path: os.path.normpath(os.path.expanduser(path))
+
 pDirName = os.path.dirname
+
 pName = lambda path: os.path.basename(os.path.splitext(path)[0])
+
 pExt = lambda path: os.path.splitext(path)[1]
-pBackAccess = lambda path, perms : any(all(os.access(path.rsplit(os.path.sep,i+1)[0], perm) for perm in perms) if type(perms) in [list,tuple] else os.access(path.rsplit(os.path.sep,i+1)[0], perms) for i in range(len(path.split(os.path.sep))))
-pMakeDirs = lambda path: os.makedirs(path, mode=711, exist_ok=True)
+
+def pBackAccess(path : str, perms : str):
+    root ,*parts = path.split(os.path.sep)
+    return any(pAccess(pJoin(root, os.path.sep, *(parts[:-i])), perms) for i in range(len(parts)+1))
+
+def pMakeDirs(path, mode=7):
+    os.makedirs(path, mode=mode<<6, exist_ok=True)
+    if not os.access(path, mode=mode):
+        os.chmod(path, mode=mode<<6 + mode<<3)
+        if not os.access(path, mode=mode):
+            os.chmod(path, mode=mode<<6 + mode<<3 + mode)
 ```
 """
 
@@ -76,13 +95,15 @@ def pBackAccess(path : str, perms : str):
 
 def pMakeDirs(path, mode=7):
     """```python
-    os.makedirs(path, mode=mode, exist_ok=True)
+    os.makedirs(path, mode=mode<<6, exist_ok=True)
     if not os.access(path, mode=mode):
-        os.chmod(path, mode=mode)
+        os.chmod(path, mode=mode<<6 + mode<<3)
+        if not os.access(path, mode=mode):
+            os.chmod(path, mode=mode<<6 + mode<<3 + mode)
     ```
     """
-    os.makedirs(path, mode=mode*100, exist_ok=True)
+    os.makedirs(path, mode=mode<<6, exist_ok=True)
     if not os.access(path, mode=mode):
-        os.chmod(path, mode=mode*110)
+        os.chmod(path, mode=mode<<6 + mode<<3)
         if not os.access(path, mode=mode):
-            os.chmod(path, mode=mode*111)
+            os.chmod(path, mode=mode<<6 + mode<<3 + mode)
