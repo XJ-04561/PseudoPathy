@@ -127,4 +127,4 @@ class PathList(list):
 		return " ".join(self)
 	
 	def __format__(self, format_spec):
-		return " ".join(self)
+		return "'"+"' '".join(self)+"'"
