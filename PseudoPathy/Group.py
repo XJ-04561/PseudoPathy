@@ -143,6 +143,5 @@ class PathGroup:
 					print(e)
 					LOGGER.exception(e, stack_level=logging.DEBUG)
 			else:
-				print(f"pBackAccess({r}, \"w\") is False")
-				LOGGER.debug(f"pBackAccess({r}, \"w\") is False")
+				LOGGER.debug(f"pBackAccess({r!r}, \"w\") is False")
 		return None
