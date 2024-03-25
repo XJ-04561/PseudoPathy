@@ -5,10 +5,9 @@ from functools import cached_property
 random.seed()
 
 LOGGER = logging.Logger("PseudoPathy")
+"""`logging.Logger` object to use."""
 
-"""`logging.Loggger` object to use."""
 DISPOSE : bool = True
-"""Whether `DisposablePath` objects should shutil.rmtree(self) when deleted/trash-collected."""
 
 if hasattr(__main__, "__file__"):
 	head, tail = os.path.split(__main__.__file__)
@@ -21,7 +20,7 @@ else:
 	"""Directory used as `installDir`"""
 
 # OS Alibis
-from PseudoPathy.PathShortHands import pSep, pJoin, pExists, pIsAbs, pIsFile, pExpUser, pAbs, pNorm, pDirName, pName, pExt, pAccess, pBackAccess, pMakeDirs, PERMS_LOOKUP_OS, PERMS_LOOKUP
+from PseudoPathy.PathShortHands import pSep, pJoin, pExists, pIsAbs, pIsFile, pIsDir, pExpUser, pAbs, pNorm, pReal, pDirName, pName, pExt, pAccess, pBackAccess, pMakeDirs, PERMS_LOOKUP_OS, PERMS_LOOKUP
 
 ## Library Globals
 

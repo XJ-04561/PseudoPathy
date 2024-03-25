@@ -166,11 +166,11 @@ class CommonGroups(MinimalPathLibrary):
 	def installDir(self):	return self._lib.get("installDir") or DirectoryPath(PROGRAM_DIRECTORY)
 
 	@workDir.setter
-	def workDir(self, path):	self._lib["workDir"] = Path(path)
+	def workDir(self, path):	self._lib["workDir"] = DirectoryPath(path)
 	@userDir.setter
-	def userDir(self, path):	self._lib["userDir"] = Path(path)
+	def userDir(self, path):	self._lib["userDir"] = DirectoryPath(path)
 	@installDir.setter
-	def installDir(self, path):	self._lib["installDir"] = Path(path)
+	def installDir(self, path):	self._lib["installDir"] = DirectoryPath(path)
 
 	def __init__(self, *args, **kwargs):
 		super(CommonGroups, self).__init__(self, *args, **kwargs)

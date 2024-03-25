@@ -28,23 +28,24 @@ class Path(str):
 	def fullPerms(self): return self.create(purpose="rwx")
 
 	def __new__(cls, *paths, purpose="r"):
+		joined = pReal(pJoin(*paths))
 		if cls is Path:
-			if pIsFile(paths[-1]):
+			if pIsFile(joined):
 				cls = FilePath
-			else:
+			elif pIsDir(joined):
 				cls = DirectoryPath
 		
-		obj = super(Path, cls).__new__(cls, pNorm(pJoin(*paths)))
+		obj = super(Path, cls).__new__(cls, pReal(pJoin(*paths)))
 		obj.defaultPurpose = purpose
 		return obj
 	
 	def __add__(self, right):
 		return Path(str.__add__(self.rstrip(pSep), right), purpose=self.defaultPurpose)
 
-	def __gt__(self, right):
+	def __truediv__(self, right):
 		return Path(self, right, purpose=getattr(right, "defaultPurpose", None) or self.defaultPurpose)
 	
-	def __lt__(self, left):
+	def __rtruediv__(self, left):
 		return Path(left, self, purpose=self.defaultPurpose)
 
 	def __or__(self, right : Path|PathGroup):

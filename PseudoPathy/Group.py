@@ -62,10 +62,14 @@ class PathGroup:
 		for i in range(len(self._roots)):
 			self._roots[i] = self._roots[i] + right
 
-	def __gt__(self, right):
+	def __truediv__(self, right):
 		return PathGroup(*[r > right for r in self._roots], purpose=self.defaultPurpose)
 	
-	def __ge__(self, right):
+	def __rtruediv__(self, left):
+		if type(left) is PathGroup: raise NotImplementedError("'>' between two pathgroups is not yet supported.")
+		return PathGroup(*[left > r for r in self._roots], purpose=self.defaultPurpose)
+	
+	def __itruediv__(self, right):
 		self._roots = [r > right for r in self._roots]
 	
 	def __contains__(self, path : str):

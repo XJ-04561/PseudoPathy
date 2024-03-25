@@ -11,11 +11,15 @@ pIsAbs = lambda path: os.path.isabs(os.path.normpath(os.path.expanduser(path)))
 
 pIsFile = os.path.isfile
 
+pIsDir = os.path.isdir
+
 pExpUser = os.path.expanduser
 
 pAbs = lambda path: os.path.abspath(os.path.expanduser(path))
 
 pNorm = lambda path: os.path.normpath(os.path.expanduser(path))
+
+pReal = lambda path: os.path.realpath(os.path.expanduser(path))
 
 pDirName = os.path.dirname
 
@@ -29,10 +33,15 @@ def pBackAccess(path : str, perms : str):
 
 def pMakeDirs(path, mode=7):
     os.makedirs(path, mode=mode<<6, exist_ok=True)
-    if not os.access(path, mode=mode):
-        os.chmod(path, mode=mode<<6 + mode<<3)
-        if not os.access(path, mode=mode):
-            os.chmod(path, mode=mode<<6 + mode<<3 + mode)
+    if os.access(path, mode=mode):
+        return True
+    os.chmod(path, mode=mode<<6 + mode<<3)
+    if os.access(path, mode=mode):
+        return True
+    os.chmod(path, mode=mode<<6 + mode<<3 + mode)
+    if os.access(path, mode=mode):
+        return True
+    return False
 ```
 """
 
@@ -61,6 +70,9 @@ pIsAbs = lambda path: os.path.isabs(os.path.normpath(os.path.expanduser(path)))
 pIsFile = os.path.isfile
 """`os.path.isfile`"""
 
+pIsDir = os.path.isdir
+"""`os.path.isdir`"""
+
 pExpUser = os.path.expanduser
 """`os.path.expanduser`"""
 
@@ -69,6 +81,9 @@ pAbs = lambda path: os.path.abspath(os.path.expanduser(path))
 
 pNorm = lambda path: os.path.normpath(os.path.expanduser(path))
 """`lambda path: os.path.normpath(os.path.expanduser(path))`"""
+
+pReal = lambda path: os.path.realpath(os.path.expanduser(path))
+"""`lambda path: os.path.realpath(os.path.expanduser(path))`"""
 
 pDirName = os.path.dirname
 """`os.path.dirname`"""
@@ -96,14 +111,24 @@ def pBackAccess(path : str, perms : str):
 def pMakeDirs(path, mode=7):
     """```python
     os.makedirs(path, mode=mode<<6, exist_ok=True)
-    if not os.access(path, mode=mode):
-        os.chmod(path, mode=mode<<6 + mode<<3)
-        if not os.access(path, mode=mode):
-            os.chmod(path, mode=mode<<6 + mode<<3 + mode)
+    if os.access(path, mode=mode):
+        return True
+    os.chmod(path, mode=mode<<6 + mode<<3)
+    if os.access(path, mode=mode):
+        return True
+    os.chmod(path, mode=mode<<6 + mode<<3 + mode)
+    if os.access(path, mode=mode):
+        return True
+    return False
     ```
     """
     os.makedirs(path, mode=mode<<6, exist_ok=True)
-    if not os.access(path, mode=mode):
-        os.chmod(path, mode=mode<<6 + mode<<3)
-        if not os.access(path, mode=mode):
-            os.chmod(path, mode=mode<<6 + mode<<3 + mode)
+    if os.access(path, mode=mode):
+        return True
+    os.chmod(path, mode=mode<<6 + mode<<3)
+    if os.access(path, mode=mode):
+        return True
+    os.chmod(path, mode=mode<<6 + mode<<3 + mode)
+    if os.access(path, mode=mode):
+        return True
+    return False
