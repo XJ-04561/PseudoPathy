@@ -63,18 +63,18 @@ class PathGroup:
 			self._roots[i] = self._roots[i] + right
 
 	def __truediv__(self, right):
-		return PathGroup(*[r > right for r in self._roots], purpose=self.defaultPurpose)
+		return PathGroup(*[r / right for r in self._roots], purpose=self.defaultPurpose)
 	
 	def __rtruediv__(self, left):
 		if type(left) is PathGroup: raise NotImplementedError("'>' between two pathgroups is not yet supported.")
-		return PathGroup(*[left > r for r in self._roots], purpose=self.defaultPurpose)
+		return PathGroup(*[left / r for r in self._roots], purpose=self.defaultPurpose)
 	
 	def __itruediv__(self, right):
-		self._roots = [r > right for r in self._roots]
+		self._roots = [r / right for r in self._roots]
 	
 	def __contains__(self, path : str):
 		for r in self._roots:
-			if os.path.exists(r > path):
+			if os.path.exists(r / path):
 				return True
 		return False
 	
@@ -115,8 +115,8 @@ class PathGroup:
 			purpose = self.defaultPurpose
 		
 		for r in self._roots:
-			if pAccess(r > path, purpose):
-				return Path(r > path)
+			if pAccess(r / path, purpose):
+				return Path(r / path)
 		return None
 	
 	def find(self, path : str="", purpose:str=None):
@@ -134,14 +134,14 @@ class PathGroup:
 			purpose = self.defaultPurpose
 		# Try to find existing path for purpose(s).
 		for r in self._roots:
-			if pAccess(r > path, purpose):
-				return r > path
+			if pAccess(r / path, purpose):
+				return r / path
 		# Try to make a path for purpose(s).
 		for r in self._roots:
 			if pBackAccess(r, "w"):
 				try:
-					pMakeDirs(r > path)
-					return r > path
+					pMakeDirs(r / path)
+					return r / path
 				except Exception as e:
 					# Happens if write permission exists for parent directories but not for lower level directories.
 					print(e)

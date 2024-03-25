@@ -60,7 +60,7 @@ class Path(str):
 		return iter([self])
 	
 	def __contains__(self, item):
-		return pExists(self > item)
+		return pExists(self / item)
 	
 	def __getitem__(self, path : str, purpose:str=None) -> str:
 		if type(path) in [slice, int]:
@@ -68,9 +68,9 @@ class Path(str):
 		else:
 			if purpose is None:
 				purpose = self.defaultPurpose
-			if pExists(self > path):
-				if pAccess(self > path, purpose):
-					return Path(self > path, purpose=purpose)
+			if pExists(self / path):
+				if pAccess(self / path, purpose):
+					return Path(self / path, purpose=purpose)
 		return None
 	
 	def create(self, path : str="", purpose : str=None) -> Path:
@@ -78,13 +78,13 @@ class Path(str):
 		if purpose is None:
 			purpose = self.defaultPurpose
 	
-		if pAccess(self > path, purpose):
-			return self > path
+		if pAccess(self / path, purpose):
+			return self / path
 		
 		elif pBackAccess(self, "w"): # Try to make a path for purpose(s).
 			try:
-				pMakeDirs(self > path)
-				return self > path
+				pMakeDirs(self / path)
+				return self / path
 			except:
 				pass # Happens if write permission exists for parent directories but not for lower level directories.
 		return None

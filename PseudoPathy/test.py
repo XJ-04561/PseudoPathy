@@ -15,8 +15,8 @@ def runTest():
 	dg1 = p1 | p2
 	print("p1 | p2 = ", dg1)
 
-	p3 = p2 > "Documents"
-	print("p2 > \"Documents\" = ", p3)
+	p3 = p2 / "Documents"
+	print("p2 / \"Documents\" = ", p3)
 
 	p4 = p1 + "-Data"
 	print("p1 + \"-Data\" = ", p4)
@@ -26,7 +26,7 @@ def runTest():
 
 	print("dg1 | dg2 = ", dg1 | dg2)
 
-	ex1 = p2 > "myReads.fq"+".log"
+	ex1 = p2 / "myReads.fq"+".log"
 	print(ex1)
 
 	lib = PathLibrary()
