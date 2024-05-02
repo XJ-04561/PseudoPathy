@@ -71,6 +71,9 @@ class MinimalPathLibrary:
 	
 	def __len__(self):
 		return len(self._lib)
+	
+	def clear(self):
+		object.__setattr__(self, "_lib", {})
 
 	def access(self, path, mode : str="rwx", create : bool=False):
 		'''Throws appropriate errors if access is not possible.'''
