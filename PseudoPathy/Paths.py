@@ -73,8 +73,9 @@ class Path(str):
 					return Path(self / path, purpose=purpose)
 		return None
 	
-	def create(self, path : str="", purpose : str=None) -> Path:
+	def create(self, path : str="", purpose : str=None, others : str="r") -> Path:
 		'''Should not be used to create files, only directories!'''
+		from PseudoPathy.PathShortHands import pPerms
 		if purpose is None:
 			purpose = self.defaultPurpose
 	
@@ -83,10 +84,12 @@ class Path(str):
 		
 		elif pBackAccess(self, "w"): # Try to make a path for purpose(s).
 			try:
-				pMakeDirs(self / path)
+				pMakeDirs(self / path, mode=pPerms(purpose), others=pPerms(others))
 				return self / path
 			except:
-				pass # Happens if write permission exists for parent directories but not for lower level directories.
+				pass
+		else:
+			LOGGER.debug(f"pBackAccess({self!r}, \"w\") is False")
 		return None
 
 class DirectoryPath(Path):

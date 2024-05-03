@@ -128,7 +128,7 @@ class PathGroup:
 		in the group if it does not currently exist.'''
 		return self.__getitem__(path, purpose=purpose) or self.create(path=path, purpose=purpose)
 	
-	def create(self, path : str="", purpose : str=None) -> Path:
+	def create(self, path : str="", purpose : str=None, others : str="r") -> Path:
 		'''Should not be used to create files, only directories!'''
 		if purpose is None:
 			purpose = self.defaultPurpose
@@ -138,14 +138,6 @@ class PathGroup:
 				return r / path
 		# Try to make a path for purpose(s).
 		for r in self._roots:
-			if pBackAccess(r, "w"):
-				try:
-					pMakeDirs(r / path)
-					return r / path
-				except Exception as e:
-					# Happens if write permission exists for parent directories but not for lower level directories.
-					print(e)
-					LOGGER.exception(e, stack_level=logging.DEBUG)
-			else:
-				LOGGER.debug(f"pBackAccess({r!r}, \"w\") is False")
+			if (out := r.create(path=path, purpose=purpose, others=others)) is not None:
+				return out
 		return None

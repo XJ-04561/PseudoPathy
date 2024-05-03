@@ -49,12 +49,24 @@ import os
 
 PERMS_LOOKUP = {"r":"read", "w":"write", "x":"execute"}
 """Dictionary for lookup of full names for permission type initials using lower case initials as keys. ie. `"r"` -> `"read"`, `"w"` -> `"write"`, or `"x"` -> `"execute"`."""
-PERMS_LOOKUP_OS = {"r":os.R_OK, "w":os.W_OK, "x":os.X_OK}
+PERMS_LOOKUP_OS = {"r":os.R_OK, "w":os.W_OK, "x":os.X_OK, "d":8}
+PERMS_LOOKUP_OS_INV = {os.R_OK:"r", os.W_OK:"w", os.X_OK:"x", 0:"d"}
+
+##
+## HANDLE BITMASK BETTER
+##
+
 """Dictionary for lookup of `os` permission types using lower case initials as keys. ie. `"r"`, `"w"`, or `"x"`."""
 
 ## Make these methods of Path and PathGroup instead?
 
 # OS Alibis
+pPerms = lambda mode : sum(map(PERMS_LOOKUP_OS.__getitem__, mode))
+"""`lambda mode : sum(map(PERMS_LOOKUP_OS.__getitem__, mode))`"""
+
+pCharPerms = lambda chMode : "".join(map(PERMS_LOOKUP_OS_INV.__getitem__, chMode))
+"""`lambda mode : sum(map(PERMS_LOOKUP_OS.__getitem__, mode))`"""
+
 pSep = os.path.sep
 """`os.path.sep`"""
 
@@ -94,7 +106,7 @@ pName = lambda path: os.path.basename(os.path.splitext(path)[0])
 pExt = lambda path: os.path.splitext(path)[1]
 """`lambda path: os.path.splitext(path)[1]`"""
 
-pAccess = lambda path, mode : os.access(path, mode=sum(PERMS_LOOKUP_OS[c] for c in mode))
+pAccess = lambda path, mode : os.access(path, mode=pPerms(mode))
 """`lambda path, mode : os.access(path, mode=sum(PERMS_LOOKUP_OS[c] for c in mode))`"""
 
 def pBackAccess(path : str, perms : str):
@@ -108,7 +120,7 @@ def pBackAccess(path : str, perms : str):
     # separator required between root and the rest. Otherwise you get: os.path.join("C:", "Users") -> 'C:Users' or os.path.join("", "srv") -> "srv"
     return any(pAccess(pJoin(root, os.path.sep, *(parts[:-i])), perms) for i in range(len(parts)+1))
 
-def pMakeDirs(path, mode=7):
+def pMakeDirs(path, mode : int=7, others : int=4):
     """```python
     os.makedirs(path, mode=mode<<6, exist_ok=True)
     if os.access(path, mode=mode):
@@ -122,10 +134,11 @@ def pMakeDirs(path, mode=7):
     return False
     ```
     """
-    os.makedirs(path, mode=mode<<6, exist_ok=True)
+
+    os.makedirs(path, mode=mode<<6 + others<<3 + others, exist_ok=True)
     if os.access(path, mode=mode):
         return True
-    os.chmod(path, mode=mode<<6 + mode<<3)
+    os.chmod(path, mode=mode<<6 + mode<<3 + others)
     if os.access(path, mode=mode):
         return True
     os.chmod(path, mode=mode<<6 + mode<<3 + mode)

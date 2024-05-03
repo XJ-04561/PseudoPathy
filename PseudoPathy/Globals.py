@@ -1,6 +1,6 @@
 
 
-import os, shutil, random, sys, __main__, logging
+import os, shutil, random, sys, logging
 from functools import cached_property
 random.seed()
 
@@ -9,15 +9,7 @@ LOGGER = logging.Logger("PseudoPathy")
 
 DISPOSE : bool = True
 
-if hasattr(__main__, "__file__"):
-	head, tail = os.path.split(__main__.__file__)
-	mainName = os.path.basename(head if tail == "__main__.py" else tail)
-	PROGRAM_DIRECTORY = os.path.join(os.environ.get("programFiles") or "/srv", os.path.splitext(mainName)[0])
-	"""Directory used as `installDir`"""
-	del head, tail, mainName
-else:
-	PROGRAM_DIRECTORY = os.path.normpath(".")
-	"""Directory used as `installDir`"""
+PROGRAMS_DIRECTORY = os.environ.get("programFiles") or "/srv"
 
 # OS Alibis
 from PseudoPathy.PathShortHands import pSep, pJoin, pExists, pIsAbs, pIsFile, pIsDir, pExpUser, pAbs, pNorm, pReal, pDirName, pName, pExt, pAccess, pBackAccess, pMakeDirs, PERMS_LOOKUP_OS, PERMS_LOOKUP

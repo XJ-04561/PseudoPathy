@@ -3,14 +3,15 @@
 from PseudoPathy.Globals import *
 from PseudoPathy.Paths import Path, FilePath, DirectoryPath, DisposablePath
 from PseudoPathy.Group import PathGroup
+from This import this
 
 class MinimalPathLibrary:
 	"""Same functionalities as PathLibrary, but with no default directories and groups."""
-	_lib : dict[str,Path]
+	_lib : dict[str,Path] = None
 	
 	def __init__(self, *args, **kwargs):
-		object.__setattr__(self, "_lib", {})
-		for name, path in kwargs.items():
+		self._lib = {}
+		for name, path in filter(lambda x: x[0] not in self.__dict__, kwargs.items()):
 			if type(path) in [Path, DirectoryPath, FilePath, DisposablePath, PathGroup]:
 				self._lib[name] = path
 			else:
@@ -38,18 +39,28 @@ class MinimalPathLibrary:
 			return self.__getattr__(key)
 	
 	def __setitem__(self, key, value):
-		self._lib[key] = value
+		self.__setattr__(key, value)
 	
 	def __getattr__(self, name):
 		return self._lib.get(name)
 	
 	def __setattr__(self, name, value):
-		if hasattr(self, name):
+		if name in self.__dict__:
 			object.__setattr__(self, name, value)
-		self._lib[name] = value
+		else:
+			self._lib[name] = value
 
 	def __delitem__(self, key):
-		del self._lib[key]
+		if key in self.__dict__:
+			object.__delattr__(self, key)
+		else:
+			del self._lib[key]
+	
+	def __delattr__(self, name):
+		if name in self.__dict__:
+			object.__delattr__(self, name)
+		else:
+			del self._lib[name]
 
 	def __repr__(self):
 		return "<{}.{} at 0x{:0>16}>".format(__name__, type(self).__name__, hex(id(self))[2:])
@@ -144,22 +155,6 @@ class CommonGroups(MinimalPathLibrary):
 	personal : PathGroup
 	shared : PathGroup
 	withBackup : PathGroup
-	
-	W : PathGroup
-	U : PathGroup
-	I : PathGroup
-	WU : PathGroup
-	UW : PathGroup
-	WI : PathGroup
-	IW : PathGroup
-	UI : PathGroup
-	IU : PathGroup
-	WUI : PathGroup
-	WIU : PathGroup
-	UWI : PathGroup
-	IWU : PathGroup
-	UIW : PathGroup
-	IUW : PathGroup
 
 	@property
 	def workDir(self):		return self._lib.get("workDir") or DirectoryPath(pAbs(os.curdir))
@@ -176,28 +171,13 @@ class CommonGroups(MinimalPathLibrary):
 	def installDir(self, path):	self._lib["installDir"] = DirectoryPath(path)
 
 	def __init__(self, *args, **kwargs):
-		super(CommonGroups, self).__init__(self, *args, **kwargs)
+		super().__init__(*args, **kwargs)
 
 		self.locals=PathGroup(self.workDir, self.userDir)
 		self.personal=PathGroup(self.userDir, self.workDir)
 		self.shared=PathGroup(self.installDir, self.userDir, self.workDir)
 		self.withBackup=PathGroup(self.workDir, self.installDir, self.userDir)
-		# Acronymized `PathGroup`s of every combination of the three default directories.
-		self.W = PathGroup(self.workDir)
-		self.U = PathGroup(self.userDir)
-		self.I = PathGroup(self.installDir)
-		self.WU = PathGroup(self.workDir, self.userDir)
-		self.UW = PathGroup(self.userDir, self.workDir)
-		self.WI = PathGroup(self.workDir, self.installDir)
-		self.IW = PathGroup(self.installDir, self.workDir)
-		self.UI = PathGroup(self.userDir, self.installDir)
-		self.IU = PathGroup(self.installDir, self.userDir)
-		self.WUI = PathGroup(self.workDir, self.userDir, self.installDir)
-		self.WIU = PathGroup(self.workDir, self.installDir, self.userDir)
-		self.UWI = PathGroup(self.userDir, self.workDir, self.installDir)
-		self.IWU = PathGroup(self.installDir, self.workDir, self.userDir)
-		self.UIW = PathGroup(self.userDir, self.installDir, self.workDir)
-		self.IUW = PathGroup(self.installDir, self.userDir, self.workDir)
+	
 
 class PathLibrary(MinimalPathLibrary):
 	"""
@@ -227,34 +207,23 @@ class PathLibrary(MinimalPathLibrary):
 		ex: `commonGroups.UWI` will get you a PathGroup with an order of userDir, workDir, installDir.
 	"""
 	
-	commonGroups : CommonGroups
+	SOFTWARE_NAME : str = "PseudoPathy"
+	commonGroups : CommonGroups = CommonGroups()
 
-	@property
-	def workDir(self):		return self._lib.get("workDir") or DirectoryPath(pAbs(os.curdir))
-	@property
-	def userDir(self):		return self._lib.get("userDir") or DirectoryPath("~")
-	@property
-	def installDir(self):	return self._lib.get("installDir") or DirectoryPath(PROGRAM_DIRECTORY)
+	workDir = DirectoryPath(pAbs(os.curdir))
+	userDir = DirectoryPath("~")
+	installDir = DirectoryPath(PROGRAMS_DIRECTORY, SOFTWARE_NAME)
 	
-	@workDir.setter
-	def workDir(self, path):	self.commonGroups.workDir = self._lib["workDir"] = Path(path)
-	@userDir.setter
-	def userDir(self, path):	self.commonGroups.userDir = self._lib["userDir"] = Path(path)
-	@installDir.setter
-	def installDir(self, path):	self.commonGroups.installDir = self._lib["installDir"] = Path(path)
-	
-	def __init__(self, *args, **kwargs):
-		super(PathLibrary, self).__init__(self, *args, **kwargs)
-		object.__setattr__(self, "commonGroups", CommonGroups())
-		self.workDir.create("", "rw")
-		self.userDir.create("", "rw")
-		self.installDir.create("", "rw")
+	def __init_subclass__(cls, **kwargs) -> None:
+		super().__init_subclass__(cls, **kwargs)
+		cls.installDir = DirectoryPath(PROGRAMS_DIRECTORY, cls.SOFTWARE_NAME)
+		cls.installDir.create(purpose="rw", others="r")
 	
 	def __str__(self):
 		""""""
-		ret = [f"Directories in Library at 0x{hex(id(self))[2:]:0>16}:"]
+		ret = [f"<Directories in Library at 0x{id(self):0>16x}>"]
 		for name in ["workDir", "userDir", "installDir"]:
-			p = self.__getattribute__(name)
+			p = getattr(self, name)
 			if type(p) is PathGroup:
 				ret.append(f"  |||| {name:<20} {p:<28}")
 			else:
@@ -276,5 +245,6 @@ class PathLibrary(MinimalPathLibrary):
 				w = "w" if pAccess(p, "w") else "-"
 				x = "x" if pAccess(p, "x") else "-"
 				ret.append(f"  {d+r+w+x} {name:<20} {p:<28}")
+		ret.append(f"</Library>")
 		return "\n".join(ret)
 
