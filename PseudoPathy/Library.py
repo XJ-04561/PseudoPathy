@@ -156,12 +156,10 @@ class CommonGroups(MinimalPathLibrary):
 	shared : PathGroup
 	withBackup : PathGroup
 
+	workDir : str = os.curdir
+	userDir = USER_DIRECTORY
 	@property
-	def workDir(self):		return self._lib.get("workDir") or DirectoryPath(pAbs(os.curdir))
-	@property
-	def userDir(self):		return self._lib.get("userDir") or DirectoryPath("~")
-	@property
-	def installDir(self):	return self._lib.get("installDir") or DirectoryPath(PROGRAM_DIRECTORY)
+	def installDir(self):	return self._lib.get("installDir") or DirectoryPath(PROGRAMS_DIRECTORY)
 
 	@workDir.setter
 	def workDir(self, path):	self._lib["workDir"] = DirectoryPath(path)
@@ -208,11 +206,12 @@ class PathLibrary(MinimalPathLibrary):
 	"""
 	
 	SOFTWARE_NAME : str = "PseudoPathy"
+	"""This is what you want to override for installation/software-related files to go into a folder named after your Software"""
 	commonGroups : CommonGroups = CommonGroups()
 
-	workDir = DirectoryPath(pAbs(os.curdir))
-	userDir = DirectoryPath("~")
-	installDir = DirectoryPath(PROGRAMS_DIRECTORY, SOFTWARE_NAME)
+	workDir : str = os.curdir
+	userDir = USER_DIRECTORY
+	installDir = INSTALL_DIRECTORY
 	
 	def __init_subclass__(cls, **kwargs) -> None:
 		super().__init_subclass__(cls, **kwargs)

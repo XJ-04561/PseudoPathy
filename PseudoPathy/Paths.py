@@ -1,6 +1,8 @@
 
 
+from typing import Any
 from PseudoPathy.Globals import *
+import PseudoPathy.Globals as Globals
 
 class Path: pass
 class PathGroup: pass
@@ -27,15 +29,15 @@ class Path(str):
 	@property
 	def fullPerms(self): return self.create(purpose="rwx")
 
-	def __new__(cls, *paths, purpose="r"):
-		joined = pReal(pJoin(*paths))
+	def __new__(cls, /, p=".", *paths, purpose="r"):
+		joined = pJoin(p, *paths)
 		if cls is Path:
 			if pIsFile(joined):
 				cls = FilePath
 			elif pIsDir(joined):
 				cls = DirectoryPath
 		
-		obj = super(Path, cls).__new__(cls, pReal(pJoin(*paths)))
+		obj = super(Path, cls).__new__(cls, joined)
 		obj.defaultPurpose = purpose
 		return obj
 	
@@ -132,3 +134,6 @@ class PathList(list):
 	
 	def __format__(self, format_spec):
 		return "'"+"' '".join(self)+"'"
+
+Globals.USER_DIRECTORY = DirectoryPath(Globals.USER_DIRECTORY)
+Globals.PROGRAMS_DIRECTORY = DirectoryPath(Globals.PROGRAMS_DIRECTORY)

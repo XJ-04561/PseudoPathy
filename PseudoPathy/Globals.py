@@ -2,14 +2,42 @@
 
 import os, shutil, random, sys, logging
 from functools import cached_property
+from typing import overload, Literal, Container, Any
+	
 random.seed()
+
+def unCapitalize(string):
+	return f"{string[0].lower()}{string[1:]}"
+
+class PathPermMeta(type):
+	def __instancecheck__(self, instance: Any) -> bool:
+		return getattr(instance, unCapitalize(self.__name__), None) is not None or os.access(str(instance), mode=self.code)
+
+class Readable(metaclass=PathPermMeta):
+	code : int = 4
+class Writable(metaclass=PathPermMeta):
+	code : int = 2
+class Executable(metaclass=PathPermMeta):
+	code : int = 1
+class FullPerms(metaclass=PathPermMeta):
+	code : int = 7
 
 LOGGER = logging.Logger("PseudoPathy")
 """`logging.Logger` object to use."""
 
+IS_WINDOWS = os.name == "nt"
+
 DISPOSE : bool = True
 
+USER_DIRECTORY = os.path.expanduser("~")
 PROGRAMS_DIRECTORY = os.environ.get("programFiles") or "/srv"
+USER_PROGRAMS = (USER_DIRECTORY / "AppData" / "Local" if IS_WINDOWS else USER_DIRECTORY) / "." if not IS_WINDOWS else ""
+INSTALL_DIRECTORY = None
+def INSTALL_DIRECTORY(self):
+	from PseudoPathy.Group import PathGroup
+	return PathGroup(PROGRAMS_DIRECTORY / self.SOFTWARE_NAME, USER_PROGRAMS + self.SOFTWARE_NAME)
+
+INSTALL_DIRECTORY = cached_property(INSTALL_DIRECTORY)
 
 # OS Alibis
 from PseudoPathy.PathShortHands import pSep, pJoin, pExists, pIsAbs, pIsFile, pIsDir, pExpUser, pAbs, pNorm, pReal, pDirName, pName, pExt, pAccess, pBackAccess, pMakeDirs, PERMS_LOOKUP_OS, PERMS_LOOKUP
