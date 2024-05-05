@@ -133,7 +133,15 @@ class PathList(list):
 		return " ".join(self)
 	
 	def __format__(self, format_spec):
-		return "'"+"' '".join(self)+"'"
+		if format_spec.endswith("n"):
+			self.nameAlign
+		else:
+			return "'"+"' '".join(self)+"'"
+	
+	@cached_property
+	def nameAlign(self):
+		from PseudoPathy.FileNameAlignment import fileNameAlign
+		return fileNameAlign(*[pName(q) for q in self])
 
 Globals.USER_DIRECTORY = DirectoryPath(Globals.USER_DIRECTORY)
 Globals.PROGRAMS_DIRECTORY = DirectoryPath(Globals.PROGRAMS_DIRECTORY)

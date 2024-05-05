@@ -3,7 +3,53 @@
 import os, shutil, random, sys, logging
 from functools import cached_property
 from typing import overload, Literal, Container, Any
+from platformdirs import AppDirs
+
+def camelize(string : str):
+	return string[0] + string[1:].replace("_", " ").title().replace(" ", "")
+
+class Camelized(type):
+	def __init__(self, className, bases, namespace):
+		namespace = namespace | {camelize(name):value for name, value in filter(lambda x : not x[0].startswith("_"), namespace.items())}
+		for base in bases:
+			namespace = namespace | {camelize(name):value for name, value in filter(lambda x : not x[0].startswith("_"), base.items())}
+		super().__init__(className, bases, namespace)
+
+class SoftwareDirs(AppDirs, metaclass=Camelized):
+	@property
+	def SOFTWARE_NAME(self):
+		return self.appname
 	
+	@SOFTWARE_NAME.setter
+	def SOFTWARE_NAME(self, value):
+		self.appname = value
+	
+	@SOFTWARE_NAME.deleter
+	def SOFTWARE_NAME(self):
+		self.appname = ""
+	
+	def __getattribute__(self, name: str) -> Any:
+		from Paths import DirectoryPath
+		if name.endswith("Dir"):
+			return DirectoryPath(super().__getattribute__(name))
+		else:
+			return super().__getattribute__(name)
+	
+	siteCacheDir : str
+	userCacheDir : str
+	siteConfigDir : str
+	userConfigDir : str
+	iterConfigDir : str
+	siteDataDir : str
+	userDataDir : str
+	iterDataDir : str
+	siteRuntimeDir : str
+	userRuntimeDir : str
+	userDocumentsDir : str
+	userLogDir : str
+	userStateDir : str
+
+
 random.seed()
 
 def unCapitalize(string):
@@ -25,19 +71,9 @@ class FullPerms(metaclass=PathPermMeta):
 LOGGER = logging.Logger("PseudoPathy")
 """`logging.Logger` object to use."""
 
-IS_WINDOWS = os.name == "nt"
-
 DISPOSE : bool = True
 
 USER_DIRECTORY = os.path.expanduser("~")
-PROGRAMS_DIRECTORY = os.environ.get("programFiles") or "/srv"
-USER_PROGRAMS = (USER_DIRECTORY / "AppData" / "Local" if IS_WINDOWS else USER_DIRECTORY) / "." if not IS_WINDOWS else ""
-INSTALL_DIRECTORY = None
-def INSTALL_DIRECTORY(self):
-	from PseudoPathy.Group import PathGroup
-	return PathGroup(PROGRAMS_DIRECTORY / self.SOFTWARE_NAME, USER_PROGRAMS + self.SOFTWARE_NAME)
-
-INSTALL_DIRECTORY = cached_property(INSTALL_DIRECTORY)
 
 # OS Alibis
 from PseudoPathy.PathShortHands import pSep, pJoin, pExists, pIsAbs, pIsFile, pIsDir, pExpUser, pAbs, pNorm, pReal, pDirName, pName, pExt, pAccess, pBackAccess, pMakeDirs, PERMS_LOOKUP_OS, PERMS_LOOKUP
