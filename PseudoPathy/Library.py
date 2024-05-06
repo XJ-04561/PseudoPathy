@@ -42,7 +42,7 @@ class MinimalPathLibrary:
 		return self._lib.get(name)
 	
 	def __setattr__(self, name, value):
-		if name in self.__dict__:
+		if name in type(self).__dict__:
 			super().__setattr__(name, value)
 		else:
 			self._lib[name] = value
