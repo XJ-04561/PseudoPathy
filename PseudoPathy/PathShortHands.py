@@ -1,6 +1,10 @@
 """
 # OS Alibis
 ```python
+pPerms = lambda mode : sum(map(PERMS_LOOKUP_OS.__getitem__, mode))
+
+pCharPerms = lambda chMode : "".join(map(PERMS_LOOKUP_OS_INV.__getitem__, chMode))
+
 pSep = os.path.sep
 
 pJoin = os.path.join
@@ -27,15 +31,18 @@ pName = lambda path: os.path.basename(os.path.splitext(path)[0])
 
 pExt = lambda path: os.path.splitext(path)[1]
 
+pAccess = lambda path, mode : os.access(path, mode=pPerms(mode))
+
 def pBackAccess(path : str, perms : str):
     root ,*parts = path.split(os.path.sep)
+    # separator required between root and the rest. Otherwise you get: os.path.join("C:", "Users") -> 'C:Users' or os.path.join("", "srv") -> "srv"
     return any(pAccess(pJoin(root, os.path.sep, *(parts[:-i])), perms) for i in range(len(parts)+1))
 
-def pMakeDirs(path, mode=7):
-    os.makedirs(path, mode=mode<<6, exist_ok=True)
+def pMakeDirs(path, mode : int=7, others : int=0):
+    os.makedirs(path, mode=mode<<6 + others<<3 + others, exist_ok=True)
     if os.access(path, mode=mode):
         return True
-    os.chmod(path, mode=mode<<6 + mode<<3)
+    os.chmod(path, mode=mode<<6 + mode<<3 + others)
     if os.access(path, mode=mode):
         return True
     os.chmod(path, mode=mode<<6 + mode<<3 + mode)
@@ -120,7 +127,7 @@ def pBackAccess(path : str, perms : str):
     # separator required between root and the rest. Otherwise you get: os.path.join("C:", "Users") -> 'C:Users' or os.path.join("", "srv") -> "srv"
     return any(pAccess(pJoin(root, os.path.sep, *(parts[:-i])), perms) for i in range(len(parts)+1))
 
-def pMakeDirs(path, mode : int=7, others : int=4):
+def pMakeDirs(path, mode : int=7, others : int=0):
     """```python
     os.makedirs(path, mode=mode<<6, exist_ok=True)
     if os.access(path, mode=mode):

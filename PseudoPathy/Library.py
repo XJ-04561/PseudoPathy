@@ -115,31 +115,6 @@ class MinimalPathLibrary:
 		return True
 
 class PathLibrary(MinimalPathLibrary, SoftwareDirs):
-	"""
-		This structure allows for defining file managing as well and making sure that directory and file path
-		information is simply passed around by handing around the same 'Library'.
-
-		Contains some default paths for `workDir`, `userDir`, `installDir`.
-		`os` functions are used for default workDir and userDir. __main__ is used for installDir, which means that if
-		using the python shell `installDir` will be set at time of import to os.path.normpath(".").
-
-		Also contains a default called `commonGroups`, which is a `MinimalPathLibrary` which only contains `PathGroup`
-		attributes with different order of priorities to look through `workDir`, `userDir`, and `installDir`.
-		They are defined as such:
-		```python
-		@cached_property
-		def commonGroups(self):
-			return MinimalPathLibrary(
-				locals=PathGroup(self.workDir, self.userDir),
-				personal=PathGroup(self.userDir, self.workDir),
-				shared=PathGroup(self.installDir, self.userDir, self.workDir),
-				withBackup=PathGroup(self.workDir, self.installDir, self.userDir),
-				...
-			)
-		```
-		Only the named ones are shown above. All combinations exist as capitalized acronyms of the directories,
-		ex: `commonGroups.UWI` will get you a PathGroup with an order of userDir, workDir, installDir.
-	"""
 	
 	SOFTWARE_NAME : str
 	"""This is what you want to override for installation/software-related files to go into a folder named after your Software"""

@@ -112,17 +112,14 @@ class FilePath(Path):
 		following the last dot of the file, instead of appending the new file extension behind the old one."""
 		return FilePath(self.rsplit(".", 1)[0]+"."+value.lstrip("."))
 
-class DisposablePath(Path):
-	"""Will remove iteslf and its contents using shutil.rmtree in a try-except with ignore_errors=True.
-	All DisposablePath instances can be disabled (Making them just a copy of `Path`) by setting
-	PseudoPathy.Globals.DISPOSE=False."""
-
-	def __del__(self):
-		if DISPOSE:
-			try:
-				shutil.rmtree(self, ignore_errors=True)
-			except:
-				LOGGER.warning(f"Failed to remove content of directory: '{self}'")
+class UniqueFilePath(Path):
+	
+	def __new__(cls, /, p=".", *paths, purpose="w"):
+		import tempfile
+		dir, prefix = os.path.split(pJoin(p, *paths).rstrip(os.path.sep))
+		obj = super(UniqueFilePath, cls).__new__(cls, tempfile.mkdtemp(dir=dir, prefix=prefix+"-[", suffix="]"))
+		obj.defaultPurpose = purpose
+		return obj
 
 class PathList(list):
 	def __new__(cls, *data):

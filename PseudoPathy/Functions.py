@@ -3,7 +3,7 @@ import tempfile, random
 
 import PseudoPathy.Globals as Globals
 from PseudoPathy.PathShortHands import *
-from PseudoPathy.Paths import Path, FilePath, DirectoryPath, DisposablePath
+from PseudoPathy.Paths import Path, FilePath, DirectoryPath
 from PseudoPathy.Group import PathGroup
 
 def createTemp(dir : Path|PathGroup=None, prefix : str=None, suffix : str=None, ext : str=None):
@@ -12,7 +12,7 @@ def createTemp(dir : Path|PathGroup=None, prefix : str=None, suffix : str=None, 
 	use the 'ext' keyword argument without a leading '.'."""
 	if dir is None:
 		pass
-	elif type(dir) not in [Path, DirectoryPath, FilePath, DisposablePath, PathGroup]:
+	elif type(dir) not in [Path, DirectoryPath, FilePath, PathGroup]:
 		try:
 			pMakeDirs(os.path.dirname(dir))
 		except:
