@@ -3,11 +3,22 @@
 from typing import Any
 from PseudoPathy.Globals import *
 import PseudoPathy.Globals as Globals
+import re
 
 class Path: pass
 class PathGroup: pass
 
-class Path(str):
+pathPat = re.compile(r"\w")
+
+class PathLike(type):
+	def __instancecheck__(self, instance):
+		"""Not meant to check validity of string as pathname, but more to get a hint whether as to this even *could* be a path-string."""
+		if isinstance(instance, str) and instance:
+			return True
+		else:
+			return False
+		
+class Path(str, metaclass=PathLike):
 	""""""
 
 	defaultPurpose : str

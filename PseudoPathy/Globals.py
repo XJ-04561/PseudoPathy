@@ -1,58 +1,71 @@
 
 
-import os, shutil, random, sys, logging, re
+import os, shutil, random, sys, logging, re, copy
 from functools import cached_property
 from typing import overload, Literal, Container, Any
-from platformdirs import AppDirs
+from appdirs import AppDirs
 
-pat = re.compile(r"[_](\w)")
+# pat = re.compile(r"[_](\w)")
 
-def camelize(string : str):
-	pat.sub(string, lambda m : m.group(0).upper())
+# def camelize(string : str):
+# 	pat.sub(string, lambda m : m.group(0).upper())
 
-class Pathize:
-	prop : property
-	def __init__(self, prop):
-		self.prop = prop
+# class Pathize:
+# 	prop : property
+# 	def __init__(self, prop):
+# 		self.prop = prop
 	
-	def __get__(self, instance, owner=None):
-		from Paths import DirectoryPath
-		return DirectoryPath(self.prop.__get__(instance, owner))
+# 	def __get__(self, instance, owner=None):
+# 		from Paths import DirectoryPath
+# 		return DirectoryPath(self.prop.__get__(instance, owner))
 
-class Camelized(type):
-	def __new__(cls, className, bases, namespace):
-		namespace = {camelize(name):Pathize(value) for name, value in filter(lambda x : not x[0].startswith("_"), namespace.items())}
-		for base in bases:
-			namespace = namespace | {camelize(name):Pathize(value) for name, value in filter(lambda x : not x[0].startswith("_"), vars(base).items())}
-		return super().__new__(cls, className, (), namespace)
+# class Camelized(type):
+# 	def __new__(cls, className, bases, namespace):
+# 		namespace = {camelize(name):Pathize(value) for name, value in filter(lambda x : not x[0].startswith("_"), namespace.items())}
+# 		for base in bases:
+# 			namespace = namespace | {camelize(name):Pathize(value) for name, value in filter(lambda x : not x[0].startswith("_"), vars(base).items())}
+# 		return super().__new__(cls, className, (), namespace)
 
-class SoftwareDirs(AppDirs, metaclass=Camelized):
-	@property
-	def SOFTWARE_NAME(self):
-		return self.appname
-	
-	@SOFTWARE_NAME.setter
-	def SOFTWARE_NAME(self, value):
-		self.appname = value
-	
-	@SOFTWARE_NAME.deleter
-	def SOFTWARE_NAME(self):
-		self.appname = ""
-	
-	siteCacheDir : str
-	userCacheDir : str
+class Rename(type):
+	def __new__(cls, name, bases, namespace):
+		for name, oldName in namespace["__annotations__"].items():
+			if type(oldName) is str:
+				for base in reversed(bases):
+					if hasattr(base, oldName):
+						namespace[name] = getattr(base, oldName)
+						break
+		return type.__new__(type, name, bases, namespace)
+class LinkNames(type):
+	def __new__(cls, name, bases, namespace):
+		for name, oldName in namespace["__annotations__"].items():
+			if type(oldName) is str:
+				for base in reversed(bases):
+					if hasattr(base, oldName):
+						namespace[name] = property(lambda self: getattr(self, oldName), lambda self, value: setattr(self, oldName, value), lambda self: delattr(self, oldName), getattr(getattr(base, oldName), "__doc__", None))
+						break
+		return type.__new__(type, name, bases, namespace)
+AppDirs
+class SoftwareDirs(AppDirs, metaclass=Rename):
 
-	siteConfigDir : str
-	userConfigDir : str
-	iterConfigDir : str
-	siteDataDir : str
-	userDataDir : str
-	iterDataDir : str
-	siteRuntimeDir : str
-	userRuntimeDir : str
-	userDocumentsDir : str
-	userLogDir : str
-	userStateDir : str
+	SOFTWARE_NAME : str
+	AUTHOR_NAME : str
+	VERSION_NUMBER : str
+	userDataDir		: "user_data_dir"
+	userConfigDir	: "user_config_dir"
+	userCacheDir	: "user_cache_dir"
+	siteDataDir		: "site_data_dir"
+	siteConfigDir	: "site_config_dir"
+	userLogDir		: "user_log_dir"
+	def __init__(self, *args, **kwargs) -> None:
+		self.appname
+		self.appauthor
+		self.appauthor
+	def __getattribute__(self, name: str) -> Any:
+		if isinstance(getattr(self, name), str):
+			from PseudoPathy.Paths import DirectoryPath
+			return DirectoryPath(name)
+		else:
+			return super().__getattribute__(name)
 
 
 random.seed()
