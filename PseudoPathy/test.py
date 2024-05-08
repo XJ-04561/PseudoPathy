@@ -12,11 +12,11 @@ def runTest():
 	dg1 = p1 | p2
 	print("p1 | p2 = ", dg1)
 
-	p3 = p2 / "Documents"
-	print("p2 / \"Documents\" = ", p3)
+	p3 = p1 / "Users"
+	print("p1 / \"Users\" = ", p3)
 
-	p4 = p1 + "-Data"
-	print("p1 + \"-Data\" = ", p4)
+	p4 = p2 + "-Data"
+	print("p2 + \"-Data\" = ", p4)
 
 	dg2 = p1 | p2 | p3 | p4
 	print("p1 | p2 | p3 | p4 = ", dg2)
