@@ -5,67 +5,46 @@ from PseudoPathy.Paths import Path, FilePath, DirectoryPath
 from PseudoPathy.Group import PathGroup
 from PseudoPathy.PathUtilities import SoftwareDirs
 from This import this
+from itertools import chain
 
 _NOT_SET = object()
+_LINE_SKIP = object()
 
 class PathLibrary:
 	"""Same functionalities as SoftwareLibrary, but with no default directories and groups."""
-	_lib : dict[str,Path] = _NOT_SET
 	
 	def __init__(self, *args, **kwargs):
-		self._lib = {}
 		for name, path in filter(lambda x: x[0] not in self.__dict__, kwargs.items()):
 			if type(path) in [Path, DirectoryPath, FilePath, PathGroup]:
-				self._lib[name] = path
+				setattr(self, name, path)
 			else:
 				try:
-					self._lib[name] = Path(path)
+					setattr(self, name, Path(path))
 				except:
 					# Not acceptable data type for a path.
 					pass
 	
 	def __contains__(self, item):
-		if item in self._lib:
-			return True
-		elif item in dir(self):
-			return True
-		else:
-			return False
+		return hasattr(self, item)
 	
 	def __iter__(self):
-		return iter(self._lib.items())
+		"""Only iterates through the instance-specific entries, not the class-defined ones."""
+		return iter(self.__dict__.items())
 
 	def __getitem__(self, key):
-		return getattr(self.__getattribute__(key))
+		return getattr(self, key)
 	
 	def __setitem__(self, key, value):
 		setattr(self, key, value)
-	
-	def __getattr__(self, name):
-		return self._lib.get(name)
-	
-	def __setattr__(self, name, value):
-		if name in dir(self):
-			super().__setattr__(name, value)
-		else:
-			self._lib[name] = value
 
 	def __delitem__(self, key):
-		if key in self.__dict__:
-			super().__delattr__(key)
-		else:
-			del self._lib[key]
-	
-	def __delattr__(self, name):
-		if name in self.__dict__:
-			super().__delattr__(name)
-		else:
-			del self._lib[name]
+		delattr(self, key)
 	
 	def __str__(self):
 		ret = ["Directories in Library at 0x{:0>16}:\n".format(hex(id(self))[2:])]
-		for name in sorted(self._lib.keys()):
-			p = self._lib[name]
+		for name, p in chain(map(lambda x:(x, getattr(self, x)), filter(lambda x:not x.startswith("_") and x not in self.__dict__, dir(type(self)))), [(_LINE_SKIP, _LINE_SKIP)], vars(self).items()):
+			if p is _LINE_SKIP:
+				ret.append(f"  ||||{'-'*52}")
 			if type(p) is PathGroup:
 				ret.append(f"  |||| {name:<20} {p:<30}")
 			else:
