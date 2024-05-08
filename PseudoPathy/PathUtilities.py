@@ -3,19 +3,29 @@ from PseudoPathy.Globals import *
 import PseudoPathy.Globals as Globals
 
 class PathProperty(property):
-	
-	def __truediv__(self, right):
-		return PathProperty(lambda instance : self.fget(instance) / right)
-	def __add__(self, right):
-		return PathProperty(lambda instance : self.fget(instance) + right)
-	def __rtruediv__(self, left):
-		return PathProperty(lambda instance : left / self.fget(instance))
-	def __or__(self, right):
-		return PathProperty(lambda instance : self.fget(instance) | right)
-	def __ror__(self, left):
-		return PathProperty(lambda instance : left | self.fget(instance))
 
-class PathAlias(Alias):
+	def __truediv__(self, right):
+		def truediv(instance):
+			self.fget(instance) / right
+		return PathProperty(truediv)
+	def __add__(self, right):
+		def add(instance):
+			return self.fget(instance) + right
+		return PathProperty(add)
+	def __rtruediv__(self, left):
+		def rtruediv(instance):
+			return left / self.fget(instance)
+		return PathProperty(rtruediv)
+	def __or__(self, right):
+		def _or(instance):
+			return self.fget(instance) | right
+		return PathProperty(_or)
+	def __ror__(self, left):
+		def ror(instance):
+			return left | self.fget(instance)
+		return PathProperty(ror)
+
+class PathAlias(Alias, PathProperty):
 
 	def __get__(self, instance, owner=None):
 		from PseudoPathy import Path, PathGroup
@@ -23,17 +33,6 @@ class PathAlias(Alias):
 			return Path(path)
 		else:
 			return PathGroup(*path.split(os.pathsep))
-	
-	def __truediv__(self, right):
-		return PathProperty(lambda instance : self.fget(instance) / right)
-	def __add__(self, right):
-		return PathProperty(lambda instance : self.fget(instance) + right)
-	def __rtruediv__(self, left):
-		return PathProperty(lambda instance : left / self.fget(instance))
-	def __or__(self, right):
-		return PathProperty(lambda instance : self.fget(instance) | right)
-	def __ror__(self, left):
-		return PathProperty(lambda instance : left | self.fget(instance))
 
 class SoftwareDirs(AppDirs):
 	"""This is what you want to override for installation/software-related files to go into a folder named after your Software"""
