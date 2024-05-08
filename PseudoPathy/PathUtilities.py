@@ -4,10 +4,6 @@ import PseudoPathy.Globals as Globals
 
 class PathProperty(property):
 
-	def __get__(self, *args, **kwargs):
-		print(self, args, kwargs)
-		property.__get__(self, *args, **kwargs)
-
 	def __truediv__(self, right):
 		def truediv(instance):
 			self.fget(instance) / right

@@ -17,6 +17,7 @@ class Alias:
 	fdel : Callable
 
 	def fget(self, instance):
+		print(repr(self), repr(instance))
 		if self.realName != self.aliasName:
 			return getattr(instance, self.realName)
 		else:
