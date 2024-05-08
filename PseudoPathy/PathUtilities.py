@@ -18,16 +18,16 @@ class SoftwareDirs(AppDirs, metaclass=Rename):
 	version : str = Alias("VERSION_NAME")
 	multipath : bool = True
 
-	userDataDir		= Alias("user_data_dir")
-	siteDataDir		= Alias("site_data_dir")
+	userDataDir		= PathAlias("user_data_dir")
+	siteDataDir		= PathAlias("site_data_dir")
 	dataDir = siteDataDir | userDataDir
 
-	userConfigDir	= Alias("user_config_dir")
-	siteConfigDir	= Alias("site_config_dir")
+	userConfigDir	= PathAlias("user_config_dir")
+	siteConfigDir	= PathAlias("site_config_dir")
 	configDir = siteConfigDir | userConfigDir
 
-	userCacheDir	= Alias("user_cache_dir")
-	userLogDir		= Alias("user_log_dir")
+	userCacheDir	= PathAlias("user_cache_dir")
+	userLogDir		= PathAlias("user_log_dir")
 
 	user_data_dir	= PathAlias("user_data_dir")
 	user_config_dir	= PathAlias("user_config_dir")
