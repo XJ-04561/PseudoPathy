@@ -4,7 +4,7 @@ from PseudoPathy.Paths import Path
 
 import re
 # formatPattern = re.compile("^(?P<filler>.)??(?P<direction>[<^>])?(?P<length>[0-9]+)?[.]?(?P<precision>[0-9]+)?(?P<type>[a-z])?$")
-_formatPat = re.compile(r"(\d+)[[](.+?)[]]")
+_formatPat = re.compile(r"(\d+)[\[](.+?)[\]]")
 
 _LINE_SKIP = object()
 
@@ -97,11 +97,9 @@ class PathGroup:
 			return self.__str__()
 
 	def __getitem__(self, path : str, purpose:str=None) -> Path:
-		if purpose is None:
-			purpose = self.defaultPurpose
-		
+				
 		for r in self._roots:
-			if pAccess(r / path, purpose):
+			if pAccess(r / path, purpose or self.defaultPurpose):
 				return Path(r / path)
 		return None
 	
@@ -110,19 +108,17 @@ class PathGroup:
 		return self.__getitem__(path, purpose=purpose)
 
 	def findall(self, path : str="", purpose : str=None):
-		return [Path(r / path) for r in self._roots if pAccess(r / path, purpose)]
+		return [Path(r / path) for r in self._roots if pAccess(r / path, purpose or self.defaultPurpose)]
 	
 	def create(self, path : str="", purpose : str=None, others : str="r") -> Path:
 		'''Should not be used to create files, only directories!'''
-		if purpose is None:
-			purpose = self.defaultPurpose
 		# Try to find existing path for purpose(s).
 		for r in self._roots:
-			if pAccess(r / path, purpose):
+			if pAccess(r / path, purpose or self.defaultPurpose):
 				return r / path
 		# Try to make a path for purpose(s).
 		for r in self._roots:
-			if (out := r.create(path=path, purpose=purpose, others=others)) is not None:
+			if (out := r.create(path=path, purpose=purpose or self.defaultPurpose, others=others)) is not None:
 				return out
 		return None
 

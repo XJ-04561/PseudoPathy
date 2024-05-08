@@ -9,7 +9,7 @@ from This import this
 _NOT_SET = object()
 _LINE_SKIP = object()
 
-_formatPat = re.compile(r"(\d+)[[](.+?)[]]")
+_formatPat = re.compile(r"(\d+)[\[](.+?)[\]]")
 
 class PathLibrary:
 	"""Same functionalities as SoftwareLibrary, but with no default directories and groups."""
