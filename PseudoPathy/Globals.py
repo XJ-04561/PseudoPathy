@@ -5,26 +5,24 @@ from functools import cached_property
 from typing import overload, Literal, Container, Any
 from appdirs import AppDirs
 
-# pat = re.compile(r"[_](\w)")
+class Alias:
 
-# def camelize(string : str):
-# 	pat.sub(string, lambda m : m.group(0).upper())
-
-# class Pathize:
-# 	prop : property
-# 	def __init__(self, prop):
-# 		self.prop = prop
+	realName : str
+	aliasName : str
+	def __init__(self, realName):
+		self.realName = realName
 	
-# 	def __get__(self, instance, owner=None):
-# 		from Paths import DirectoryPath
-# 		return DirectoryPath(self.prop.__get__(instance, owner))
+	def __set_name__(self, owner, name):
+		self.aliasName = name
+	
+	def __get__(self, instance, owner=None):
+		return getattr(instance, self.realName)
 
-# class Camelized(type):
-# 	def __new__(cls, className, bases, namespace):
-# 		namespace = {camelize(name):Pathize(value) for name, value in filter(lambda x : not x[0].startswith("_"), namespace.items())}
-# 		for base in bases:
-# 			namespace = namespace | {camelize(name):Pathize(value) for name, value in filter(lambda x : not x[0].startswith("_"), vars(base).items())}
-# 		return super().__new__(cls, className, (), namespace)
+	def __set__(self, instance, value):
+		setattr(instance, self.realName, value)
+	
+	def __delete__(self, instance, owner=None):
+		delattr(instance, self.realName)
 
 class Rename(type):
 	def __new__(cls, name, bases, namespace):
@@ -44,22 +42,41 @@ class LinkNames(type):
 						namespace[name] = property(lambda self: getattr(self, oldName), lambda self, value: setattr(self, oldName, value), lambda self: delattr(self, oldName), getattr(getattr(base, oldName), "__doc__", None))
 						break
 		return type.__new__(type, name, bases, namespace)
-AppDirs
+
 class SoftwareDirs(AppDirs, metaclass=Rename):
 
-	SOFTWARE_NAME : str
-	AUTHOR_NAME : str
-	VERSION_NUMBER : str
-	userDataDir		: "user_data_dir"
-	userConfigDir	: "user_config_dir"
-	userCacheDir	: "user_cache_dir"
-	siteDataDir		: "site_data_dir"
-	siteConfigDir	: "site_config_dir"
-	userLogDir		: "user_log_dir"
-	def __init__(self, *args, **kwargs) -> None:
-		self.appname
-		self.appauthor
-		self.appauthor
+	appname : str = Alias("SOFTWARE_NAME")
+	appauthor : str = Alias("AUTHOR_NAME")
+	version : str = Alias("VERSION_NUMBER")
+	multipath : bool = True
+
+	userDataDir		: "user_data_dir" # type: ignore
+	userConfigDir	: "user_config_dir" # type: ignore
+	siteDataDir		: "site_data_dir" # type: ignore
+	siteConfigDir	: "site_config_dir" # type: ignore
+	userCacheDir	: "user_cache_dir" # type: ignore
+	userLogDir		: "user_log_dir" # type: ignore
+
+	@cached_property
+	def dataDir(self):
+		from PseudoPathy.Group import PathGroup
+		return PathGroup(self.siteDataDir, self.userDataDir)
+
+	@cached_property
+	def configDir(self):
+		from PseudoPathy.Group import PathGroup
+		return PathGroup(self.siteConfigDir, self.userConfigDir)
+	
+	@cached_property
+	def site_config_dir(self):
+		from PseudoPathy.Group import PathGroup
+		return PathGroup(*AppDirs.site_config_dir.fget(self).split(os.pathsep))
+
+	@cached_property
+	def site_data_dir(self):
+		from PseudoPathy.Group import PathGroup
+		return PathGroup(*AppDirs.site_data_dir.fget(self).split(os.pathsep))
+
 	def __getattribute__(self, name: str) -> Any:
 		if isinstance(getattr(self, name), str):
 			from PseudoPathy.Paths import DirectoryPath

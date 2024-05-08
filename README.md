@@ -15,7 +15,7 @@ pg = p1 | p2
 pg / "setup.py"
 
 # Creates a library which contains 3 properties: workDir, userDir, and installDir
-lib = PathLibrary()
+lib = SoftwareLibrary()
 
 # The library can be used like a dictionary, but values can be accessed by using keys as attributes as well
 lib.pathToREADME = p3

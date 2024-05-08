@@ -3,9 +3,9 @@ def runTest():
 	import os
 
 	try:
-		from PseudoPathy.__init__ import Path, PathLibrary
+		from PseudoPathy.__init__ import Path, SoftwareLibrary
 	except:
-		from __init__ import Path, PathLibrary
+		from __init__ import Path, SoftwareLibrary
 
 	p1 = Path(os.path.abspath("/"))
 	p2 = Path(os.path.expanduser("~"))
@@ -29,7 +29,7 @@ def runTest():
 	ex1 = p2 / "myReads.fq"+".log"
 	print(ex1)
 
-	lib = PathLibrary()
+	lib = SoftwareLibrary()
 	print(lib)
 
 if __name__ == "__main__":

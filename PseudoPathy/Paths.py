@@ -8,17 +8,7 @@ import re
 class Path: pass
 class PathGroup: pass
 
-pathPat = re.compile(r"\w")
-
-class PathLike(type):
-	def __instancecheck__(self, instance):
-		"""Not meant to check validity of string as pathname, but more to get a hint whether as to this even *could* be a path-string."""
-		if isinstance(instance, str) and instance:
-			return True
-		else:
-			return False
-		
-class Path(str, metaclass=PathLike):
+class Path(str):
 	""""""
 
 	defaultPurpose : str
@@ -150,6 +140,3 @@ class PathList(list):
 	def nameAlign(self):
 		from PseudoPathy.FileNameAlignment import fileNameAlign
 		return fileNameAlign(*[pName(q) for q in self])
-
-Globals.USER_DIRECTORY = DirectoryPath(Globals.USER_DIRECTORY)
-Globals.PROGRAMS_DIRECTORY = DirectoryPath(Globals.PROGRAMS_DIRECTORY)

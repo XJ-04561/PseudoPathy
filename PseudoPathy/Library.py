@@ -5,14 +5,14 @@ from PseudoPathy.Paths import Path, FilePath, DirectoryPath, DisposablePath
 from PseudoPathy.Group import PathGroup
 from This import this
 
-class MinimalPathLibrary:
-	"""Same functionalities as PathLibrary, but with no default directories and groups."""
+class PathLibrary:
+	"""Same functionalities as SoftwareLibrary, but with no default directories and groups."""
 	_lib : dict[str,Path] = None
 	
 	def __init__(self, *args, **kwargs):
 		self._lib = {}
 		for name, path in filter(lambda x: x[0] not in self.__dict__, kwargs.items()):
-			if type(path) in [Path, DirectoryPath, FilePath, DisposablePath, PathGroup]:
+			if type(path) in [Path, DirectoryPath, FilePath, PathGroup]:
 				self._lib[name] = path
 			else:
 				try:
@@ -114,7 +114,7 @@ class MinimalPathLibrary:
 		
 		return True
 
-class PathLibrary(MinimalPathLibrary, SoftwareDirs):
+class SoftwareLibrary(PathLibrary, SoftwareDirs):
 	
 	SOFTWARE_NAME : str
 	"""This is what you want to override for installation/software-related files to go into a folder named after your Software"""
