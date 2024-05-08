@@ -6,7 +6,7 @@ class PathProperty(property):
 
 	def __truediv__(self, right):
 		def truediv(instance):
-			self.fget(instance) / right
+			return self.fget(instance) / right
 		return PathProperty(truediv)
 	def __add__(self, right):
 		def add(instance):
@@ -29,7 +29,7 @@ class PathAlias(Alias, PathProperty):
 
 	def __get__(self, instance, owner=None):
 		from PseudoPathy import Path, PathGroup
-		if os.pathsep not in (path := super().__get__(instance, owner=owner)):
+		if os.pathsep not in (path := super(instance, type(instance)).__get__(instance, owner=owner)):
 			return Path(path)
 		else:
 			return PathGroup(*path.split(os.pathsep))
