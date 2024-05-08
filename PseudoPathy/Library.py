@@ -26,7 +26,7 @@ class PathLibrary:
 	def __contains__(self, item):
 		if item in self._lib:
 			return True
-		elif any(self[a] == item for a in dir(self)):
+		elif item in dir(self):
 			return True
 		else:
 			return False
@@ -44,7 +44,7 @@ class PathLibrary:
 		return self._lib.get(name)
 	
 	def __setattr__(self, name, value):
-		if name in type(self).__dict__:
+		if name in dir(self):
 			super().__setattr__(name, value)
 		else:
 			self._lib[name] = value
