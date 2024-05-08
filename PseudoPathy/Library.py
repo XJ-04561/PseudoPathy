@@ -5,10 +5,11 @@ from PseudoPathy.Paths import Path, FilePath, DirectoryPath
 from PseudoPathy.Group import PathGroup
 from PseudoPathy.PathUtilities import SoftwareDirs
 from This import this
-from itertools import chain
 
 _NOT_SET = object()
 _LINE_SKIP = object()
+
+_formatPat = re.compile(r"(\d+)[[](.+?)[]]")
 
 class PathLibrary:
 	"""Same functionalities as SoftwareLibrary, but with no default directories and groups."""
@@ -40,21 +41,25 @@ class PathLibrary:
 	def __delitem__(self, key):
 		delattr(self, key)
 	
-	def __str__(self):
-		ret = ["Directories in Library at 0x{:0>16}:\n".format(hex(id(self))[2:])]
+	def __str__(self, indentSize=1, indentChar="  "):
+		indent = indentChar * indentSize
+		ret = [f"Directories in Library at 0x{id(self):0>16x}:"]
 		for name, p in chain(map(lambda x:(x, getattr(self, x)), filter(lambda x:not x.startswith("_") and x not in self.__dict__, dir(type(self)))), [(_LINE_SKIP, _LINE_SKIP)], vars(self).items()):
 			if p is _LINE_SKIP:
-				ret.append(f"  ||||{'-'*52}")
-			if type(p) is PathGroup:
-				ret.append(f"  |||| {name:<20} {p:<30}")
+				ret.append(f"{indent} ||{'-'*(len(indent)-3)}")
+			if not isinstance(p, Path):
+				continue
+			if isinstance(p, (PathGroup, PathLibrary)):
+				ret.append(f"{indent} || {name:<20}"+p.__format__(f"{indentSize+1}[{indentChar}]"))
 			else:
-				d = "d" if os.path.isdir(p) or (not os.path.isfile(p) and "." not in os.path.split(p.rstrip(os.path.sep))[-1]) else "-"
-				
-				r = "r" if pAccess(p, "r") else "-"
-				w = "w" if pAccess(p, "w") else "-"
-				x = "x" if pAccess(p, "x") else "-"
-				ret.append(f"  {d+r+w+x} {name:<20} {p:<28}")
+				ret.append(f"{indent} || {name:<20} {format(p, '<'+str(len(indent)+25))}")
 		return "\n".join(ret)
+	
+	def __format__(self, fs):
+		m = _formatPat.match(fs)
+		if m is not None:
+			indentSize, indentChar = m.groups
+		return self.__str__(indentSize=indentSize, indentChar=indentChar)
 	
 	def __len__(self):
 		return len(self._lib)

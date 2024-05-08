@@ -3,7 +3,10 @@ from PseudoPathy.Globals import *
 from PseudoPathy.Paths import Path
 
 import re
-formatPattern = re.compile("^(?P<filler>.)??(?P<direction>[<^>])?(?P<length>[0-9]+)?[.]?(?P<precision>[0-9]+)?(?P<type>[a-z])?$")
+# formatPattern = re.compile("^(?P<filler>.)??(?P<direction>[<^>])?(?P<length>[0-9]+)?[.]?(?P<precision>[0-9]+)?(?P<type>[a-z])?$")
+_formatPat = re.compile(r"(\d+)[[](.+?)[]]")
+
+_LINE_SKIP = object()
 
 class PathGroup:
 	""""""
@@ -78,34 +81,20 @@ class PathGroup:
 	def __iter__(self):
 		return iter(self._roots)
 
-	def __str__(self) -> str:
-		ret = ["PathGroup:"]
-		for root in self._roots:
-			d = "d" if os.path.isdir(root) or (not os.path.isfile(root) and "." not in os.path.split(root.rstrip(os.path.sep))[-1]) else "-"
-			
-			r = "r" if os.access(root, PERMS_LOOKUP_OS["r"]) else "-"
-			w = "w" if os.access(root, PERMS_LOOKUP_OS["w"]) else "-"
-			x = "x" if os.access(root, PERMS_LOOKUP_OS["x"]) else "-"
-
-			ret.append(f"  {d}{r}{w}{x} {root}")
+	def __str__(self, indentSize=1, indentChar="  "):
+		indent = indentChar * indentSize
+		ret = [f"PathGroup at 0x{id(self):0>16x}:"]
+		for p in self._roots:
+			ret.append(f"{indent} | {format(p, "<"+str(80-len(indent)-3))}")
 		return "\n".join(ret)
-	
-	def __format__(self, format_spec) -> str:
-		ret = ["PathGroup:"]
-		match = formatPattern.match(format_spec)
-		fill = match["filler"] or " "
-		length = match["length"] or 1
-		length = int(length)
 
-		for root in self._roots:
-			d = "d" if os.path.isdir(root) or (not os.path.isfile(root) and "." not in os.path.split(root.rstrip(os.path.sep))[-1]) else "-"
-			
-			r = "r" if pAccess(root, "r") else "-"
-			w = "w" if pAccess(root, "w") else "-"
-			x = "x" if pAccess(root, "x") else "-"
-
-			ret.append(f"{fill*length}{d}{r}{w}{x} {root}")
-		return "\n".join(ret)
+	def __format__(self, fs):
+		m = _formatPat.match(fs)
+		if m is not None:
+			indentSize, indentChar = m.groups()
+			return self.__str__(indentSize=indentSize, indentChar=indentChar)
+		else:
+			return self.__str__()
 
 	def __getitem__(self, path : str, purpose:str=None) -> Path:
 		if purpose is None:

@@ -1,9 +1,10 @@
 
 
-import os, shutil, random, sys, logging, re, copy
+import os, shutil, random, sys, logging, re, copy, stat
 from functools import cached_property
 from typing import overload, Literal, Container, Any, Callable
 from appdirs import AppDirs
+from itertools import chain
 random.seed()
 
 class Alias:

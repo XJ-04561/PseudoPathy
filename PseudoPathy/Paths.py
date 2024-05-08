@@ -3,7 +3,6 @@
 from typing import Any
 from PseudoPathy.Globals import *
 import PseudoPathy.Globals as Globals
-import re
 
 class Path: pass
 class PathGroup: pass
@@ -75,6 +74,12 @@ class Path(str):
 				if pAccess(self / path, purpose):
 					return Path(self / path, purpose=purpose)
 		return None
+	
+	def __format__(self, fs):
+		try:
+			return f"{stat.filemode(os.stat(self).st_mode)} {str(self).ljust(int('0'+fs[1:])-11) if fs.startswith('<') else str(self).rjust(int('0'+fs[1:])-11)}"
+		except:
+			return f"---------- {str(self).ljust(int('0'+fs[1:])-11) if fs.startswith('<') else str(self).rjust(int('0'+fs[1:])-11) if fs.startswith('>') else str(self).center(int('0'+fs[1:])-11)}"
 	
 	def create(self, path : str="", purpose : str=None, others : str="r") -> Path:
 		'''Should not be used to create files, only directories!'''
