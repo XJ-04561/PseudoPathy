@@ -105,14 +105,12 @@ class PathGroup:
 				return Path(r / path)
 		return None
 	
-	def find(self, path : str="", purpose:str=None):
+	def find(self, path : str="", purpose : str=None):
 		'''Looks for path in the group of directories and returns first found path.'''
 		return self.__getitem__(path, purpose=purpose)
 
-	def forceFind(self, path : str="", purpose:str=None):
-		'''Looks for path in the group of directories and returns first found path. Will try to create and return path
-		in the group if it does not currently exist.'''
-		return self.__getitem__(path, purpose=purpose) or self.create(path=path, purpose=purpose)
+	def findall(self, path : str="", purpose : str=None):
+		return [Path(r / path) for r in self._roots if pAccess(r / path, purpose)]
 	
 	def create(self, path : str="", purpose : str=None, others : str="r") -> Path:
 		'''Should not be used to create files, only directories!'''
