@@ -1,7 +1,7 @@
 
 
 from PseudoPathy.Globals import *
-from PseudoPathy.Paths import Path, FilePath, DirectoryPath, DisposablePath
+from PseudoPathy.Paths import Path, FilePath, DirectoryPath
 from PseudoPathy.Group import PathGroup
 from This import this
 

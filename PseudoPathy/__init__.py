@@ -1,5 +1,5 @@
 
-from PseudoPathy.Paths import Path, FilePath, DirectoryPath, DisposablePath, PathList
+from PseudoPathy.Paths import Path, FilePath, DirectoryPath, PathList
 from PseudoPathy.Group import PathGroup
 from PseudoPathy.Library import PathLibrary, SoftwareLibrary
 import PseudoPathy.Functions as Functions

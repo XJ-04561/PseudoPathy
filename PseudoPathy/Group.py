@@ -30,12 +30,9 @@ class PathGroup:
 	def fullPerms(self): return self.create(purpose="rwx")
 
 	def __init__(self, *paths : tuple[str], purpose="r"):
+		from PseudoPathy.Paths import Path, FilePath, DirectoryPath
 		self.defaultPurpose = purpose
-		try:
-			from PseudoPathy.Paths import Path, FilePath, DirectoryPath, DisposablePath
-		except:
-			from Paths import Path, FilePath, DirectoryPath, DisposablePath
-		self._roots = [p if type(p) in [Path, FilePath, DirectoryPath, DisposablePath] else Path(p) for p in paths]
+		self._roots = [p if type(p) in [Path, FilePath, DirectoryPath] else Path(p) for p in paths]
 
 	def __or__(self, right):
 		if type(right) is PathGroup:
