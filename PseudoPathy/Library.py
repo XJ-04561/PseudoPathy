@@ -5,9 +5,11 @@ from PseudoPathy.Paths import Path, FilePath, DirectoryPath
 from PseudoPathy.Group import PathGroup
 from This import this
 
+_NOT_SET = object()
+
 class PathLibrary:
 	"""Same functionalities as SoftwareLibrary, but with no default directories and groups."""
-	_lib : dict[str,Path] = None
+	_lib : dict[str,Path] = _NOT_SET
 	
 	def __init__(self, *args, **kwargs):
 		self._lib = {}
@@ -36,7 +38,7 @@ class PathLibrary:
 		return getattr(self.__getattribute__(key))
 	
 	def __setitem__(self, key, value):
-		self.__setattr__(key, value)
+		setattr(self, key, value)
 	
 	def __getattr__(self, name):
 		return self._lib.get(name)
