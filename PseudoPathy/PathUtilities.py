@@ -1,7 +1,18 @@
 
 from PseudoPathy.Globals import *
 import PseudoPathy.Globals as Globals
-from PseudoPathy.PathProperty import PathProperty
+
+class PathProperty(property):
+	def __truediv__(self, right):
+		return PathProperty(lambda instance : self.fget(instance) / right)
+	def __add__(self, right):
+		return PathProperty(lambda instance : self.fget(instance) + right)
+	def __rtruediv__(self, left):
+		return PathProperty(lambda instance : left / self.fget(instance))
+	def __or__(self, right):
+		return PathProperty(lambda instance : self.fget(instance) | right)
+	def __ror__(self, left):
+		return PathProperty(lambda instance : left | self.fget(instance))
 
 class PathAlias(Alias, PathProperty):
 	def __get__(self, instance, owner=None):
@@ -12,6 +23,14 @@ class PathAlias(Alias, PathProperty):
 			return PathGroup(*path.split(os.path.sep))
 
 class SoftwareDirs(AppDirs):
+	"""This is what you want to override for installation/software-related files to go into a folder named after your Software"""
+
+	SOFTWARE_NAME : str = "PseudoPathy"
+	AUTHOR_NAME : str = None
+	VERSION_NAME : str = None
+
+	workDir : str	= os.curdir
+	userDir			= USER_DIRECTORY
 
 	appname : str = Alias("SOFTWARE_NAME")
 	appauthor : str = Alias("AUTHOR_NAME")

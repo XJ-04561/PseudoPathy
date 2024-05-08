@@ -101,13 +101,4 @@ class PathLibrary:
 		
 		return True
 
-class SoftwareLibrary(PathLibrary, SoftwareDirs):
-	
-	SOFTWARE_NAME : str = "PseudoPathy"
-	AUTHOR_NAME : str = None
-	VERSION_NAME : str = None
-	"""This is what you want to override for installation/software-related files to go into a folder named after your Software"""
-	
-	workDir : str	= os.curdir
-	userDir			= USER_DIRECTORY
-
+class SoftwareLibrary(PathLibrary, SoftwareDirs): pass
