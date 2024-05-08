@@ -44,16 +44,6 @@ class Alias:
 	def __delete__(self, instance, owner=None):
 		self.fdel(instance)
 
-class Rename(type):
-	def __new__(cls, name, bases, namespace):
-		for name, oldName in namespace["__annotations__"].items():
-			if type(oldName) is str:
-				for base in reversed(bases):
-					if hasattr(base, oldName):
-						namespace[name] = getattr(base, oldName)
-						break
-		return type.__new__(type, name, bases, namespace)
-
 class LinkNames(type):
 	def __new__(cls, name, bases, namespace):
 		for name, oldName in namespace["__annotations__"].items():

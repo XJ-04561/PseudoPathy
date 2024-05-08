@@ -11,7 +11,7 @@ class PathAlias(Alias, PathProperty):
 		else:
 			return PathGroup(*path.split(os.path.sep))
 
-class SoftwareDirs(AppDirs, metaclass=Rename):
+class SoftwareDirs(AppDirs):
 
 	appname : str = Alias("SOFTWARE_NAME")
 	appauthor : str = Alias("AUTHOR_NAME")
