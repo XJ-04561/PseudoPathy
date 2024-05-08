@@ -3,6 +3,7 @@ from PseudoPathy.Globals import *
 import PseudoPathy.Globals as Globals
 
 class PathProperty(property):
+	
 	def __truediv__(self, right):
 		return PathProperty(lambda instance : self.fget(instance) / right)
 	def __add__(self, right):
@@ -15,6 +16,7 @@ class PathProperty(property):
 		return PathProperty(lambda instance : left | self.fget(instance))
 
 class PathAlias(Alias):
+
 	def __get__(self, instance, owner=None):
 		from PseudoPathy import Path, PathGroup
 		if os.pathsep not in (path := super().__get__(instance, owner=owner)):
