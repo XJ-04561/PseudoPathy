@@ -44,9 +44,6 @@ class PathLibrary:
 	def __str__(self, indentSize=1, indentChar="  "):
 		indent = indentChar * indentSize
 		ret = [f"Directories in Library at 0x{id(self):0>16x}:"]
-		for name in dir(type(self)):
-			print(name, end=", ")
-			print(getattr(self, name))
 		for name, p in chain(map(lambda x:(x, getattr(self, x)), filter(lambda x:not x.startswith("_") and x not in self.__dict__, dir(type(self)))), [(_LINE_SKIP, _LINE_SKIP)], vars(self).items()):
 			if p is _LINE_SKIP:
 				ret.append(f"{indent} ||{'-'*(len(indent)-3)}")
