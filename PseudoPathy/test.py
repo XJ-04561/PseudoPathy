@@ -27,7 +27,7 @@ def runTest():
 	print(ex1)
 
 	lib = SoftwareLibrary()
-	print(lib)
+	print(str(lib))
 
 if __name__ == "__main__":
 	runTest()

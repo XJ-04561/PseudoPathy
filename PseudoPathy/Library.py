@@ -3,6 +3,7 @@
 from PseudoPathy.Globals import *
 from PseudoPathy.Paths import Path, FilePath, DirectoryPath
 from PseudoPathy.Group import PathGroup
+from PseudoPathy.PathUtilities import SoftwareDirs
 from This import this
 
 _NOT_SET = object()
@@ -119,6 +120,8 @@ class PathLibrary:
 class SoftwareLibrary(PathLibrary, SoftwareDirs):
 	
 	SOFTWARE_NAME : str
+	AUTHOR_NAME : str
+	VERSION_NAME : str
 	"""This is what you want to override for installation/software-related files to go into a folder named after your Software"""
 	
 	workDir : str	= os.curdir

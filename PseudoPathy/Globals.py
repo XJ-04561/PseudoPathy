@@ -2,7 +2,7 @@
 
 import os, shutil, random, sys, logging, re, copy
 from functools import cached_property
-from typing import overload, Literal, Container, Any
+from typing import overload, Literal, Container, Any, Callable
 from appdirs import AppDirs
 random.seed()
 
@@ -10,6 +10,24 @@ class Alias:
 
 	realName : str
 	aliasName : str
+
+	fget : Callable
+	fset : Callable
+	fdel : Callable
+
+	def fget(self, instance):
+		if self.realName != self.aliasName:
+			return getattr(instance, self.realName)
+		else:
+			for base in instance.__bases__:
+				if self.realName in base.__dict__:
+					return getattr(base, self.realName)
+			return getattr(instance, self.realName) # Throws appropriate exception
+	def fset(self, instance, value):
+		instance.__dict__[self.realName] = value
+	def fdel(self, instance):
+		del instance.__dict__[self.realName]
+	
 	def __init__(self, realName):
 		self.realName = realName
 	
@@ -17,13 +35,13 @@ class Alias:
 		self.aliasName = name
 	
 	def __get__(self, instance, owner=None):
-		return getattr(instance, self.realName)
+		return self.fget(instance)
 
 	def __set__(self, instance, value):
-		setattr(instance, self.realName, value)
+		self.fset(instance, value)
 	
 	def __delete__(self, instance, owner=None):
-		delattr(instance, self.realName)
+		self.fdel(instance)
 
 class Rename(type):
 	def __new__(cls, name, bases, namespace):
@@ -34,6 +52,7 @@ class Rename(type):
 						namespace[name] = getattr(base, oldName)
 						break
 		return type.__new__(type, name, bases, namespace)
+
 class LinkNames(type):
 	def __new__(cls, name, bases, namespace):
 		for name, oldName in namespace["__annotations__"].items():
@@ -44,80 +63,20 @@ class LinkNames(type):
 						break
 		return type.__new__(type, name, bases, namespace)
 
-class SoftwareDirs(AppDirs, metaclass=Rename):
-
-	appname : str = Alias("SOFTWARE_NAME")
-	appauthor : str = Alias("AUTHOR_NAME")
-	version : str = Alias("VERSION_NUMBER")
-	multipath : bool = True
-
-	userDataDir		= Alias("user_data_dir")
-	userConfigDir	= Alias("user_config_dir")
-	siteDataDir		= Alias("site_data_dir")
-	siteConfigDir	= Alias("site_config_dir")
-	userCacheDir	= Alias("user_cache_dir")
-	userLogDir		= Alias("user_log_dir")
-
-	@cached_property
-	def user_data_dir(self):
-		from PseudoPathy.Group import PathGroup
-		return PathGroup(AppDirs.user_data_dir.fget(self))
-
-	@cached_property
-	def user_config_dir(self):
-		from PseudoPathy.Group import PathGroup
-		return PathGroup(AppDirs.user_config_dir.fget(self))
-
-	@cached_property
-	def site_data_dir(self):
-		from PseudoPathy.Group import PathGroup
-		return PathGroup(*AppDirs.site_data_dir.fget(self).split(os.pathsep))
-
-	@cached_property
-	def site_config_dir(self):
-		from PseudoPathy.Group import PathGroup
-		return PathGroup(*AppDirs.site_config_dir.fget(self).split(os.pathsep))
-
-	@cached_property
-	def user_cache_dir(self):
-		from PseudoPathy.Group import PathGroup
-		return PathGroup(AppDirs.user_cache_dir.fget(self))
-
-	@cached_property
-	def user_log_dir(self):
-		from PseudoPathy.Group import PathGroup
-		return PathGroup(AppDirs.user_log_dir.fget(self))
-
-	@cached_property
-	def site_data_dir(self):
-		from PseudoPathy.Group import PathGroup
-		return PathGroup(*AppDirs.site_data_dir.fget(self).split(os.pathsep))
-
-	@cached_property
-	def dataDir(self):
-		from PseudoPathy.Group import PathGroup
-		return PathGroup(self.siteDataDir, self.userDataDir)
-
-	@cached_property
-	def configDir(self):
-		from PseudoPathy.Group import PathGroup
-		return PathGroup(self.siteConfigDir, self.userConfigDir)
-
-
 def unCapitalize(string):
 	return f"{string[0].lower()}{string[1:]}"
 
-class PathPermMeta(type):
+class PathPermsMeta(type):
 	def __instancecheck__(self, instance: Any) -> bool:
 		return getattr(instance, unCapitalize(self.__name__), None) is not None or os.access(str(instance), mode=self.code)
 
-class Readable(metaclass=PathPermMeta):
+class Readable(metaclass=PathPermsMeta):
 	code : int = 4
-class Writable(metaclass=PathPermMeta):
+class Writable(metaclass=PathPermsMeta):
 	code : int = 2
-class Executable(metaclass=PathPermMeta):
+class Executable(metaclass=PathPermsMeta):
 	code : int = 1
-class FullPerms(metaclass=PathPermMeta):
+class FullPerms(metaclass=PathPermsMeta):
 	code : int = 7
 
 LOGGER = logging.Logger("PseudoPathy")
