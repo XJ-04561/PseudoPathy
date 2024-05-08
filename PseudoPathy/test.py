@@ -2,10 +2,7 @@
 def runTest():
 	import os
 
-	try:
-		from PseudoPathy.__init__ import Path, SoftwareLibrary
-	except:
-		from __init__ import Path, SoftwareLibrary
+	from PseudoPathy import Path, SoftwareLibrary
 
 	p1 = Path(os.path.abspath("/"))
 	p2 = Path(os.path.expanduser("~"))

@@ -4,6 +4,7 @@ import os, shutil, random, sys, logging, re, copy
 from functools import cached_property
 from typing import overload, Literal, Container, Any
 from appdirs import AppDirs
+random.seed()
 
 class Alias:
 
@@ -50,12 +51,47 @@ class SoftwareDirs(AppDirs, metaclass=Rename):
 	version : str = Alias("VERSION_NUMBER")
 	multipath : bool = True
 
-	userDataDir		: "user_data_dir" # type: ignore
-	userConfigDir	: "user_config_dir" # type: ignore
-	siteDataDir		: "site_data_dir" # type: ignore
-	siteConfigDir	: "site_config_dir" # type: ignore
-	userCacheDir	: "user_cache_dir" # type: ignore
-	userLogDir		: "user_log_dir" # type: ignore
+	userDataDir		= Alias("user_data_dir")
+	userConfigDir	= Alias("user_config_dir")
+	siteDataDir		= Alias("site_data_dir")
+	siteConfigDir	= Alias("site_config_dir")
+	userCacheDir	= Alias("user_cache_dir")
+	userLogDir		= Alias("user_log_dir")
+
+	@cached_property
+	def user_data_dir(self):
+		from PseudoPathy.Group import PathGroup
+		return PathGroup(AppDirs.user_data_dir.fget(self))
+
+	@cached_property
+	def user_config_dir(self):
+		from PseudoPathy.Group import PathGroup
+		return PathGroup(AppDirs.user_config_dir.fget(self))
+
+	@cached_property
+	def site_data_dir(self):
+		from PseudoPathy.Group import PathGroup
+		return PathGroup(*AppDirs.site_data_dir.fget(self).split(os.pathsep))
+
+	@cached_property
+	def site_config_dir(self):
+		from PseudoPathy.Group import PathGroup
+		return PathGroup(*AppDirs.site_config_dir.fget(self).split(os.pathsep))
+
+	@cached_property
+	def user_cache_dir(self):
+		from PseudoPathy.Group import PathGroup
+		return PathGroup(AppDirs.user_cache_dir.fget(self))
+
+	@cached_property
+	def user_log_dir(self):
+		from PseudoPathy.Group import PathGroup
+		return PathGroup(AppDirs.user_log_dir.fget(self))
+
+	@cached_property
+	def site_data_dir(self):
+		from PseudoPathy.Group import PathGroup
+		return PathGroup(*AppDirs.site_data_dir.fget(self).split(os.pathsep))
 
 	@cached_property
 	def dataDir(self):
@@ -66,26 +102,7 @@ class SoftwareDirs(AppDirs, metaclass=Rename):
 	def configDir(self):
 		from PseudoPathy.Group import PathGroup
 		return PathGroup(self.siteConfigDir, self.userConfigDir)
-	
-	@cached_property
-	def site_config_dir(self):
-		from PseudoPathy.Group import PathGroup
-		return PathGroup(*AppDirs.site_config_dir.fget(self).split(os.pathsep))
 
-	@cached_property
-	def site_data_dir(self):
-		from PseudoPathy.Group import PathGroup
-		return PathGroup(*AppDirs.site_data_dir.fget(self).split(os.pathsep))
-
-	def __getattribute__(self, name: str) -> Any:
-		if isinstance(getattr(self, name), str):
-			from PseudoPathy.Paths import DirectoryPath
-			return DirectoryPath(name)
-		else:
-			return super().__getattribute__(name)
-
-
-random.seed()
 
 def unCapitalize(string):
 	return f"{string[0].lower()}{string[1:]}"
