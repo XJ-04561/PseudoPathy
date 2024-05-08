@@ -20,7 +20,7 @@ class Alias:
 		if self.realName != self.aliasName:
 			return getattr(instance, self.realName)
 		else:
-			for base in instance.__bases__:
+			for base in type(instance).__bases__:
 				if self.realName in base.__dict__:
 					return getattr(base, self.realName)
 			return getattr(instance, self.realName) # Throws appropriate exception
