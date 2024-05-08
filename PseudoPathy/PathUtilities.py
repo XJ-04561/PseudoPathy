@@ -14,13 +14,24 @@ class PathProperty(property):
 	def __ror__(self, left):
 		return PathProperty(lambda instance : left | self.fget(instance))
 
-class PathAlias(Alias, PathProperty):
+class PathAlias(Alias):
 	def __get__(self, instance, owner=None):
 		from PseudoPathy import Path, PathGroup
 		if os.pathsep not in (path := super().__get__(instance, owner=owner)):
 			return Path(path)
 		else:
-			return PathGroup(*path.split(os.path.sep))
+			return PathGroup(*path.split(os.pathsep))
+	
+	def __truediv__(self, right):
+		return PathProperty(lambda instance : self.fget(instance) / right)
+	def __add__(self, right):
+		return PathProperty(lambda instance : self.fget(instance) + right)
+	def __rtruediv__(self, left):
+		return PathProperty(lambda instance : left / self.fget(instance))
+	def __or__(self, right):
+		return PathProperty(lambda instance : self.fget(instance) | right)
+	def __ror__(self, left):
+		return PathProperty(lambda instance : left | self.fget(instance))
 
 class SoftwareDirs(AppDirs):
 	"""This is what you want to override for installation/software-related files to go into a folder named after your Software"""
