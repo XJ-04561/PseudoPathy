@@ -18,6 +18,7 @@ class PathProperty(property):
 		return PathProperty(rtruediv)
 	def __or__(self, right):
 		def _or(instance):
+			print(instance)
 			return self.fget(instance) | right
 		return PathProperty(_or)
 	def __ror__(self, left):
