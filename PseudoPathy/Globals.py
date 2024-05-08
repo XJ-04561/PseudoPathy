@@ -20,9 +20,13 @@ class Alias:
 		if self.realName != self.aliasName:
 			return getattr(instance, self.realName)
 		else:
-			for base in type(instance).__bases__:
-				if self.realName in base.__dict__:
-					return getattr(base, self.realName)
+			for cls in type(instance).mro()[1:]:
+				if self.realName in dir(cls):
+					attr = getattr(cls, self.realName)
+					if hasattr(attr, "__get__"):
+						return attr.__get__(instance, cls)
+					else:
+						return attr
 			return getattr(instance, self.realName) # Throws appropriate exception
 	def fset(self, instance, value):
 		instance.__dict__[self.realName] = value
