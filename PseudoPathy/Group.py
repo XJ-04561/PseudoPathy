@@ -62,6 +62,13 @@ class PathGroup:
 		for i in range(len(self._roots)):
 			self._roots[i] = self._roots[i] + right
 
+	def __sub__(self, right):
+		return PathGroup(*[r - right for r in self._roots], purpose=self.defaultPurpose)
+	
+	def __isub__(self, right):
+		for i in range(len(self._roots)):
+			self._roots[i] = self._roots[i] - right
+
 	def __truediv__(self, right):
 		return PathGroup(*(r / right for r in self._roots), purpose=self.defaultPurpose)
 	

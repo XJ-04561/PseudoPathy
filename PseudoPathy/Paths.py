@@ -45,6 +45,9 @@ class Path(str):
 	def __add__(self, right):
 		return Path(str.__add__(self, right), purpose=self.defaultPurpose)
 
+	def __sub__(self, right):
+		return Path(str.__add__(self.rstrip(os.path.sep), right), purpose=self.defaultPurpose)
+
 	def __truediv__(self, right):
 		return Path(self, right, purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
 	

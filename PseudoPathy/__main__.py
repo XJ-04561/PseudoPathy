@@ -1,3 +1,3 @@
-from PseudoPathy.test import runTest
+from tests.test import runTest
 
 runTest()
