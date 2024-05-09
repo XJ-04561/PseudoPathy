@@ -30,8 +30,8 @@ def test_compatibility():
 	assert Path(userpath) == userpath
 
 
-	assert Path(abspath) / "Hello" == abspath / "Hello"
 	assert Path(abspath) / "Hello" == os.path.join(abspath, "Hello")
+	assert Path(userpath) / "Hello" == os.path.join(userpath, "Hello")
 	assert Path(abspath) + "Hello" == abspath + "Hello"
 	assert Path(abspath, "") - "Hello" == abspath.rstrip(pSep) + "Hello"
 
