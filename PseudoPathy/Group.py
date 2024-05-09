@@ -92,7 +92,7 @@ class PathGroup:
 		indent = indentChar * indentSize
 		ret = [f"PathGroup at 0x{id(self):0>16x}:"]
 		for p in self._roots:
-			ret.append(f"{indent} | {format(p, "<"+str(80-len(indent)-3))}")
+			ret.append(f"{indent} | {format(p, '<'+str(80-len(indent)-3))}")
 		return "\n".join(ret)
 
 	def __format__(self, fs):
