@@ -31,6 +31,7 @@ class Path(str):
 
 	def __new__(cls, /, p=".", *paths, purpose="r"):
 		joined = pJoin(p, *paths)
+		joined = joined.rstrip(pSep) or joined
 		if cls is Path:
 			if pIsFile(joined):
 				cls = FilePath
@@ -42,17 +43,17 @@ class Path(str):
 		return obj
 	
 	def __add__(self, right):
-		return Path(str.__add__(self.rstrip(pSep), right), purpose=self.defaultPurpose)
+		return Path(str.__add__(self, right), purpose=self.defaultPurpose)
 
 	def __truediv__(self, right):
-		return Path(self, right, purpose=getattr(right, "defaultPurpose", None) or self.defaultPurpose)
+		return Path(self, right, purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
 	
 	def __rtruediv__(self, left):
 		return Path(left, self, purpose=self.defaultPurpose)
 
 	def __or__(self, right : Path|PathGroup):
 		from PseudoPathy.Group import PathGroup
-		return PathGroup(self, *right, purpose=getattr(right, "defaultPurpose", None) or self.defaultPurpose)
+		return PathGroup(self, *right, purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
 	
 	def __ror__(self, left : Path|PathGroup):
 		from PseudoPathy.Group import PathGroup

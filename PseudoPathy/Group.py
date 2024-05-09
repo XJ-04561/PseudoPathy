@@ -33,9 +33,9 @@ class PathGroup:
 	def fullPerms(self): return self.create(purpose="rwx")
 
 	def __init__(self, *paths : tuple[str], purpose="r"):
-		from PseudoPathy.Paths import Path, FilePath, DirectoryPath
+		from PseudoPathy.Paths import Path
 		self.defaultPurpose = purpose
-		self._roots = [p if type(p) in [Path, FilePath, DirectoryPath] else Path(p) for p in paths]
+		self._roots = [p if isinstance(p, Path) else Path(p) for p in paths]
 
 	def __or__(self, right):
 		if type(right) is PathGroup:
@@ -63,11 +63,11 @@ class PathGroup:
 			self._roots[i] = self._roots[i] + right
 
 	def __truediv__(self, right):
-		return PathGroup(*[r / right for r in self._roots], purpose=self.defaultPurpose)
+		return PathGroup(*(r / right for r in self._roots), purpose=self.defaultPurpose)
 	
 	def __rtruediv__(self, left):
-		if type(left) is PathGroup: raise NotImplementedError("'>' between two pathgroups is not yet supported.")
-		return PathGroup(*[left / r for r in self._roots], purpose=self.defaultPurpose)
+		if type(left) is PathGroup: return NotImplemented
+		return PathGroup(*(left / r for r in self._roots), purpose=self.defaultPurpose)
 	
 	def __itruediv__(self, right):
 		self._roots = [r / right for r in self._roots]
