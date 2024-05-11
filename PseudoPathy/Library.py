@@ -6,6 +6,7 @@ from PseudoPathy.Group import PathGroup
 from PseudoPathy.PathUtilities import SoftwareDirs
 
 _formatPat = re.compile(r"(\d+)[\[](.+?)[\]]")
+_LINE_SKIP = object()
 
 class PathLibrary:
 	"""Same functionalities as SoftwareLibrary, but with no default directories and groups."""

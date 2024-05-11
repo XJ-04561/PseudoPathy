@@ -7,8 +7,6 @@ from typing import overload, Literal, Container, Any, Callable
 from This import this
 random.seed()
 
-_NOT_SET = object()
-_LINE_SKIP = object()
 
 def unCapitalize(string):
 	return f"{string[0].lower()}{string[1:]}"

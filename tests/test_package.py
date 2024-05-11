@@ -100,12 +100,21 @@ def test_library():
 
 	class MyLibrary(SoftwareLibrary):
 		SOFTWARE_NAME = "MyApp"
-		AUTHOR_NAME = "Fredrik Sörensen"
 		VERSION_NAME = "ALPHA"
 
 	lib = MyLibrary()
-
+	
 	for attr in lib.baseDirs:
 		assert hasattr(lib, attr), f"SoftwareLibrary does not have access to expected attribute {attr!r}"
 		assert getattr(lib, attr) is not None, f"SoftwareLibrary attribute {attr!r} is None"
-		assert getattr(lib, attr).endswith(os.path.join("Fredrik Sörensen", "MyApp", "ALPHA")), f'SoftwareLibrary attribute incorrectly named. Should end in {os.path.join("Fredrik Sörensen", "MyApp", "ALPHA")!r} but full path was {getattr(lib, attr)!r} is None'
+		assert getattr(lib, attr).endswith(os.path.join("MyApp", "ALPHA")), f'SoftwareLibrary attribute incorrectly named. Should end in {os.path.join("Fredrik Sörensen", "MyApp", "ALPHA")!r} but full path was {getattr(lib, attr)!r} is None'
+
+def test_print():
+
+	class MyLibrary(SoftwareLibrary):
+		SOFTWARE_NAME = "MyApp"
+		VERSION_NAME = "ALPHA"
+
+	lib = MyLibrary()
+	print(lib)
+	assert True
