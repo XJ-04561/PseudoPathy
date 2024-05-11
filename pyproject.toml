@@ -36,6 +36,3 @@ dependencies = []
 
 [project.urls]
 Repository = "https://github.com/XJ-04561/PseudoPathy.git"
-
-[project.scripts]
-PseudoPathy-test = "PseudoPathy.test:runTest"

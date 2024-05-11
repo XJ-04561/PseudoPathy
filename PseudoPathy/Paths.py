@@ -31,7 +31,6 @@ class Path(str):
 
 	def __new__(cls, /, p=".", *paths, purpose="r"):
 		joined = pJoin(p, *paths)
-		joined = joined.rstrip(pSep) or joined
 		if cls is Path:
 			if pIsFile(joined):
 				cls = FilePath

@@ -4,10 +4,6 @@ from PseudoPathy.Globals import *
 from PseudoPathy.Paths import Path, FilePath, DirectoryPath
 from PseudoPathy.Group import PathGroup
 from PseudoPathy.PathUtilities import SoftwareDirs
-from This import this
-
-_NOT_SET = object()
-_LINE_SKIP = object()
 
 _formatPat = re.compile(r"(\d+)[\[](.+?)[\]]")
 

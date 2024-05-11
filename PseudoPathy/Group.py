@@ -109,7 +109,15 @@ class PathGroup:
 			if pAccess(r / path, purpose or self.defaultPurpose):
 				return Path(r / path)
 		return None
+
+	def __eq__(self, other):
+		if type(other) != type(self):
+			return False
+		return self._roots == other._roots
 	
+	def endswith(self, string : str):
+		return all(r.endswith(string) for r in self._roots)
+
 	def find(self, path : str="", purpose : str=None):
 		'''Looks for path in the group of directories and returns first found path.'''
 		return self.__getitem__(path, purpose=purpose)
