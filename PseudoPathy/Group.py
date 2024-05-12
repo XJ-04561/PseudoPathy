@@ -32,10 +32,20 @@ class PathGroup:
 	@property
 	def fullPerms(self): return self.create(purpose="rwx")
 
+	@cached_property
+	def directory(self):
+		return PathGroup(r.directory for r in self._roots)
+	
+	@cached_property
+	def file(self):
+		return PathGroup(r.file for r in self._roots)
+
 	def __init__(self, *paths : tuple[str], purpose="r"):
 		from PseudoPathy.Paths import Path
+		if len(paths) == 1 and isinstance(paths[0], (list, tuple, Generator)):
+			paths = paths[0]
 		self.defaultPurpose = purpose
-		self._roots = [p if isinstance(p, Path) else Path(p) for p in paths]
+		self._roots = [Path(p) for p in paths]
 
 	def __or__(self, right):
 		if type(right) is PathGroup:
@@ -104,10 +114,11 @@ class PathGroup:
 			return self.__str__()
 
 	def __getitem__(self, path : str, purpose:str=None) -> Path:
-				
+		from PseudoPathy import FilePath, DirectoryPath
 		for r in self._roots:
-			if pAccess(r / path, purpose or self.defaultPurpose):
-				return Path(r / path)
+			out = r / path
+			if pAccess(out, purpose or self.defaultPurpose):
+				return out
 		return None
 
 	def __eq__(self, other):
@@ -115,6 +126,12 @@ class PathGroup:
 			return False
 		return self._roots == other._roots
 	
+	def prepend(self, path):
+		return path / self
+
+	def append(self, path):
+		return self / path
+
 	def endswith(self, string : str):
 		return all(r.endswith(string) for r in self._roots)
 
@@ -123,17 +140,18 @@ class PathGroup:
 		return self.__getitem__(path, purpose=purpose)
 
 	def findall(self, path : str="", purpose : str=None):
-		return [Path(r / path) for r in self._roots if pAccess(r / path, purpose or self.defaultPurpose)]
+		return tuple(filter(lambda p:pAccess(p,purpose or self.defaultPurpose), map(path.prepend, self._roots)))
 	
 	def create(self, path : str="", purpose : str=None, others : str="r") -> Path:
 		'''Should not be used to create files, only directories!'''
 		# Try to find existing path for purpose(s).
-		for r in self._roots:
-			if pAccess(r / path, purpose or self.defaultPurpose):
-				return r / path
+		paths = tuple(map(path.prepend, self._roots))
+		for p in paths:
+			if pAccess(p, purpose or self.defaultPurpose):
+				return p
 		# Try to make a path for purpose(s).
-		for r in self._roots:
-			if (out := r.create(path=path, purpose=purpose or self.defaultPurpose, others=others)) is not None:
+		for p in paths:
+			if (out := p.create(purpose=purpose or self.defaultPurpose, others=others)) is not None:
 				return out
 		return None
 

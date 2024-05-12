@@ -29,10 +29,18 @@ class Path(str):
 	@property
 	def fullPerms(self): return self.create(purpose="rwx")
 
+	@cached_property
+	def directory(self):
+		return DirectoryPath(os.path.split(self)[0]) if "." in os.path.split(self)[1][1:] else self
+	
+	@cached_property
+	def file(self):
+		return FilePath(os.path.split(self)[1]) if "." in os.path.split(self)[1][1:] else None
+
 	def __new__(cls, /, p=".", *paths, purpose="r"):
 		joined = pJoin(p, *paths)
 		if cls is Path:
-			if pIsFile(joined):
+			if pIsFile(joined) or "." in os.path.split(joined)[-1][1:]:
 				cls = FilePath
 			elif pIsDir(joined):
 				cls = DirectoryPath
@@ -84,6 +92,12 @@ class Path(str):
 		except:
 			return f"---------- {str(self).ljust(int('0'+fs[1:])-11) if fs.startswith('<') else str(self).rjust(int('0'+fs[1:])-11) if fs.startswith('>') else str(self).center(int('0'+fs[1:])-11)}"
 	
+	def prepend(self, path):
+		return path / self
+
+	def append(self, path):
+		return self / path
+
 	def create(self, path : str="", purpose : str=None, others : str="r") -> Path:
 		'''Should not be used to create files, only directories!'''
 		from PseudoPathy.PathShortHands import pPerms
@@ -106,29 +120,45 @@ class Path(str):
 class DirectoryPath(Path):
 	""""""
 	
-	pass
+	@cached_property
+	def directory(self) -> Path:
+		return self
+	
+	@cached_property
+	def file(self) -> None:
+		return None
 
 class FilePath(Path):
 	""""""
 
-	ext : str
 	@property
-	def ext(self):
+	def writable(self): return self.find(purpose="w")
+	@property
+	def fullPerms(self): return self.find(purpose="rwx")
+	@property
+	def ext(self) -> str:
 		return self.rpartition(".")[-1]
 	
 	def __lshift__(self, value : str):
 		"""Creates a version of the `FilePath` with the right string as the file extension. This changes the text
 		following the last dot of the file, instead of appending the new file extension behind the old one."""
 		return FilePath(self.rsplit(".", 1)[0]+"."+value.lstrip("."))
+	
+	@cached_property
+	def directory(self) -> DirectoryPath:
+		return DirectoryPath(os.path.split(self)[0])
+	
+	@cached_property
+	def file(self) -> DirectoryPath:
+		return FilePath(os.path.split(self)[1])
 
 class UniqueFilePath(Path):
 	
 	def __new__(cls, /, p=".", *paths, purpose="w"):
 		import tempfile
 		dir, prefix = os.path.split(pJoin(p, *paths).rstrip(os.path.sep))
-		obj = super(UniqueFilePath, cls).__new__(cls, tempfile.mkdtemp(dir=dir, prefix=prefix+"-[", suffix="]"))
-		obj.defaultPurpose = purpose
-		return obj
+		
+		return FilePath(tempfile.mkdtemp(dir=dir, prefix=prefix+"-[", suffix="]"), purpose=purpose)
 
 class PathList(list):
 	def __new__(cls, *data):
