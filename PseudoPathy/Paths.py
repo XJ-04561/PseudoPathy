@@ -38,6 +38,14 @@ class Path(str):
 		return FilePath(os.path.split(self)[1]) if "." in os.path.split(self)[1][1:] else None
 
 	def __new__(cls, /, p=".", *paths, purpose="r"):
+		if not paths:
+			if isinstance(p, Path):
+				if p.defaultPurpose == purpose:
+					return p
+				else:
+					obj = super().__new__(cls if type(p) is Path else type(p), p)
+					obj.defaultPurpose = purpose
+					return obj
 		joined = pJoin(p, *paths)
 		if cls is Path:
 			if pIsFile(joined) or "." in os.path.split(joined)[-1][1:]:
@@ -121,7 +129,7 @@ class DirectoryPath(Path):
 	""""""
 	
 	@cached_property
-	def directory(self) -> Path:
+	def directory(self) -> Self:
 		return self
 	
 	@cached_property
@@ -137,7 +145,10 @@ class FilePath(Path):
 	def fullPerms(self): return self.find(purpose="rwx")
 	@property
 	def ext(self) -> str:
-		return self.rpartition(".")[-1]
+		return self.file.partition(".")[-1]
+	@property
+	def name(self) -> str:
+		return self.file.partition(".")[0]
 	
 	def __lshift__(self, value : str):
 		"""Creates a version of the `FilePath` with the right string as the file extension. This changes the text
@@ -149,7 +160,7 @@ class FilePath(Path):
 		return DirectoryPath(os.path.split(self)[0])
 	
 	@cached_property
-	def file(self) -> DirectoryPath:
+	def file(self) -> Self:
 		return FilePath(os.path.split(self)[1])
 
 class UniqueFilePath(Path):
@@ -160,10 +171,28 @@ class UniqueFilePath(Path):
 		
 		return FilePath(tempfile.mkdtemp(dir=dir, prefix=prefix+"-[", suffix="]"), purpose=purpose)
 
-class PathList(list):
-	def __new__(cls, *data):
-		obj = super(PathList, cls).__new__(cls, *data)
-		return obj
+class PathList(tuple):
+	"""Is not based on the `list` type, as mutability is not desired, but the name is used for ease of learning for
+	lesser experienced maintainers."""
+	@overload
+	def __new__(cls, iterable): ...
+	@overload
+	def __new__(cls, *paths): ...
+	def __new__(cls, first, *rest):
+		if not rest:
+			if isinstance(first, str):
+				paths = (Path(first),)
+			else:
+				paths = tuple(map(Path, first))
+		else:
+			paths = tuple(map(Path, (first,) + rest))
+		
+		if all(isinstance(p, FilePath) for p in paths):
+			return super().__new__(FileList, paths)
+		elif all(isinstance(p, DirectoryPath) for p in paths):
+			return super().__new__(DirectoryList, paths)
+		else:
+			return super().__new__(cls, first)
 	
 	def __str__(self):
 		return " ".join(self)
@@ -176,5 +205,24 @@ class PathList(list):
 	
 	@cached_property
 	def nameAlign(self):
-		from PseudoPathy.FileNameAlignment import fileNameAlign
-		return fileNameAlign(*[pName(q) for q in self])
+		from PseudoPathy.FileNameAlignment import alignName
+		return alignName((pName(p) for p in self))
+	
+	@cached_property
+	def signature(self):
+		from PseudoPathy.FileNameAlignment import alignName
+		return alignName(self)
+
+class DirectoryList(PathList):
+
+	@cached_property
+	def signature(self):
+		from PseudoPathy.FileNameAlignment import alignName
+		return alignName(self)
+
+class FileList(PathList):
+	
+	@cached_property
+	def signature(self):
+		from PseudoPathy.FileNameAlignment import alignName
+		return alignName(p.directory / p.name for p in self)

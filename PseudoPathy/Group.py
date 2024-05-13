@@ -40,10 +40,15 @@ class PathGroup:
 	def file(self):
 		return PathGroup(r.file for r in self._roots)
 
-	def __init__(self, *paths : tuple[str], purpose="r"):
+	def __init__(self, path, *paths : tuple[str], purpose="r"):
 		from PseudoPathy.Paths import Path
-		if len(paths) == 1 and isinstance(paths[0], (list, tuple, Generator)):
-			paths = paths[0]
+		if not paths and isinstance(path, (list, tuple, Generator)):
+			paths = tuple(path)
+		elif not paths:
+			paths = (path,)
+		else:
+			paths = (path,) + paths
+
 		self.defaultPurpose = purpose
 		self._roots = [Path(p) for p in paths]
 
@@ -140,12 +145,12 @@ class PathGroup:
 		return self.__getitem__(path, purpose=purpose)
 
 	def findall(self, path : str="", purpose : str=None):
-		return tuple(filter(lambda p:pAccess(p,purpose or self.defaultPurpose), map(path.prepend, self._roots)))
+		return tuple(filter(lambda p:pAccess(p,purpose or self.defaultPurpose), map(Path(path).prepend, self._roots)))
 	
 	def create(self, path : str="", purpose : str=None, others : str="r") -> Path:
 		'''Should not be used to create files, only directories!'''
 		# Try to find existing path for purpose(s).
-		paths = tuple(map(path.prepend, self._roots))
+		paths = tuple(map(Path(path).prepend, self._roots))
 		for p in paths:
 			if pAccess(p, purpose or self.defaultPurpose):
 				return p

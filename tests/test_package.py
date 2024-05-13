@@ -86,6 +86,34 @@ def test_compatibility():
 	
 # 	assert E().d == Path("C:\\", "Users", "fresor", "Documents")#, f'E().d == Path("C:", os.sep, "Users", "fresor", "Documents") -> {E().d=} == {Path("C:", os.sep, "Users", "fresor", "Documents")=}'
 
+def test_filenameAlignment():
+	from PseudoPathy.Paths import Path, DirectoryPath, FilePath, PathList, DirectoryList, FileList
+	from PseudoPathy.FileNameAlignment import align, align2, alignName
+	import os
+	curDir, userDir = Path(os.path.realpath(".")), Path(os.path.expanduser("~"))
+	file1 = curDir / "myfile_[1].zip"
+	file2 = curDir / "myfile_[2].zip"
+	fileList = FileList(file1, file2)
+
+	assert align2(file1, file2) == file1[:-7] + "[X].zip", f"{align2(file1, file2)=} == {file1[:-7] + '[X].zip'}"
+
+	assert fileList.nameAlign == "myfile", f'{fileList.nameAlign} == {"myfile"}'
+
+	expected = (curDir / "myfile").split(":\\")[-1] if os.name == "nt" else (curDir / "myfile")
+	expected = "_".join(filter(len, expected.split(os.path.sep)))
+	assert fileList.signature == expected, f"{fileList.signature} == {expected}"
+
+	dir1 = userDir / "Documents" 
+	dir2 = userDir / "Documents" 
+	dirList = DirectoryList(dir1, dir2)
+
+	assert dirList.nameAlign == "Documents", f'{dirList.nameAlign} == {"Documents"}'
+	
+	expected = dir1.split(":\\")[-1] if os.name == "nt" else dir1
+	expected = "_".join(filter(len, expected.split(os.path.sep)))
+	
+	assert dirList.signature == expected, f"{dirList.signature} == {expected}"
+
 def test_appdirs():
 	
 	lib = SoftwareLibrary()

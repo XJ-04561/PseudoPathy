@@ -75,36 +75,54 @@ def align2(string1, string2, gapOpenCost=2, gapExtensionCost=1, matchReward=3, m
     else:
         return "".join(path[::-1])
 
-def align(*strings, **kwargs):
+def align(string : str, *strings : str, **kwargs):
     """def align(*strings, gapOpenCost=2, gapExtensionCost=1, matchReward=20, missMatchCost=1, gapSymbol="-", missMatchSymbol="#", trim=False)"""
-    if len(strings) == 0:
-        return -1
-    elif len(strings) == 1:
-        return strings[0]
+    if not strings and isinstance(string, str):
+        return string
+    elif not strings:
+        strings = tuple(string)
+    else:
+        strings = (string,) + strings
     
     if len(strings) % 2:
         # Odd number of strings
         strings = (*strings, strings[0])
     
-    nextStrings = []
-    while len(strings) > 1:
-        for i in range(len(strings)//2):
-            nextStrings.append(align2(strings[2*i], strings[2*i+1], **kwargs))
-        strings = nextStrings
-        nextStrings = []
-    return strings[0]
+    workSet = list(strings)
+    while len(workSet) > 1:
+        A, B = workSet.pop(), workSet.pop()
+        workSet.append(align2(A, B, **kwargs))
+    return workSet[0]
 
+def alignName(string : str, *strings : str, best : bool=False, **kwargs):
+    from This import this
+    from PseudoPathy.Globals import ALLOWED, SPLITTER
 
-if __name__ == "__main__":
-    print("Testing alignment scenarios.")
-    aligned1 = align("FSC448_R1.fq", "FSC448_R2.fq")
+    if not strings and isinstance(string, str):
+        return string
+    elif not strings:
+        strings = string
+    else:
+        strings = (string,) + strings
 
-    print("'{}' & '{}' = '{}'".format("FSC448_R1.fq", "FSC448_R2.fq", aligned1))
-
-    aligned2 = align("FSC448.fq", "FSC448(1).fq")
-
-    print("'{}' & '{}' = '{}'".format("FSC448.fq", "FSC448(1).fq", aligned2))
+    tableOfParts = [
+        tuple(filter(
+            ALLOWED.fullmatch,
+            reversed(SPLITTER.split(string))
+        )) for string in strings
+    ]
     
-    aligned3 = align("FSC448.fq", "FSC658-[FSC448_R1].fq", "FSC567-[FSC448_R2].fq", compressed=True)
+    words = []
+    for parts in zip(*tableOfParts):
+        print(parts)
+        word = align(parts, gapSymbol="\x01", missMatchSymbol="\x02", trim=True, compressed=True)
+        score = (len(word.replace("\x01", "").replace("\x02", ""))) / (sum(map(len, parts)) / len(parts))
 
-    print("'{}' & '{}' & '{}' = '{}'".format("FSC448.fq", "FSC658-[FSC448_R1].fq", "FSC567-[FSC448_R2].fq", aligned3))
+        words.append((word.replace("\x01", kwargs.get("gapSymbol", "-")).replace("\x02", kwargs.get("missMatchSymbol", "_")), score))
+    
+    out = tuple(map(*this[0], filter(lambda x:x[1] > 0.8, words)))
+    if len(out) == 0 or best:
+        return max(words, key=lambda x:x[1])[0]
+    else:
+        return "_".join(reversed(out))
+
