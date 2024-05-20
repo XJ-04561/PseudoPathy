@@ -197,32 +197,33 @@ class PathList(tuple):
 	def __str__(self):
 		return " ".join(self)
 	
-	def __format__(self, format_spec):
+	def __format__(self, format_spec : str):
 		if format_spec.endswith("n"):
-			self.nameAlign
+			self.name
 		else:
 			return "'"+"' '".join(self)+"'"
 	
-	@cached_property
-	def nameAlign(self):
-		from PseudoPathy.FileNameAlignment import alignName
-		return alignName((pName(p) for p in self))
+	def __iter__(self) -> Generator[Self,None,None]:
+		return super().__iter__()
 	
 	@cached_property
-	def signature(self):
-		from PseudoPathy.FileNameAlignment import alignName
-		return alignName(self)
-
-class DirectoryList(PathList):
-
+	def name(self) -> str:
+		from PseudoPathy.FileNameAlignment import align
+		out = align(tuple(pName(p) for p in self), compressed=True, trim=True)
+		if out == "":
+			print(tuple(pName(p) for p in self), "->", repr(out))
+		return out
+	
 	@cached_property
-	def signature(self):
+	def signature(self) -> str:
 		from PseudoPathy.FileNameAlignment import alignName
 		return alignName(self)
+
+class DirectoryList(PathList): pass
 
 class FileList(PathList):
 	
 	@cached_property
-	def signature(self):
+	def signature(self) -> str:
 		from PseudoPathy.FileNameAlignment import alignName
-		return alignName(p.directory / p.name for p in self)
+		return alignName(tuple(p.directory / p.name for p in self))

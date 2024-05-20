@@ -1,4 +1,6 @@
 
+from typing import overload, Iterable
+
 class Table:
     def __init__(self, height, width):
         self._list = [[0 for _ in range(width)] for _ in range(height)]
@@ -26,7 +28,7 @@ def checkDiag(table, y, x, value=0):
         x-=1
     return n
 
-def align2(string1, string2, gapOpenCost=2, gapExtensionCost=1, matchReward=3, missMatchCost=2, contigBonus=0.1, gapSymbol="-", missMatchSymbol="X", trim=False, compressed=False):
+def align2(string1, string2, *, gapOpenCost=2, gapExtensionCost=1, matchReward=3, missMatchCost=2, contigBonus=0.1, gapSymbol="-", missMatchSymbol="X", trim=False, compressed=False):
     size = max(len(string1), len(string2))
     size1, size2 = len(string1), len(string2)
     scores = Table(size1+1, size2+1)
@@ -74,8 +76,12 @@ def align2(string1, string2, gapOpenCost=2, gapExtensionCost=1, matchReward=3, m
         return "".join(path[::-1]).strip(gapSymbol)
     else:
         return "".join(path[::-1])
+@overload
+def align(strings : Iterable[str], *, gapSymbol="-", missMatchSymbol="X", trim=False, compressed=False, gapOpenCost=2, gapExtensionCost=1, matchReward=3, missMatchCost=2, contigBonus=0.1) -> str: ...
+@overload
+def align(*strings : str, gapSymbol="-", missMatchSymbol="X", trim=False, compressed=False, gapOpenCost=2, gapExtensionCost=1, matchReward=3, missMatchCost=2, contigBonus=0.1) -> str: ...
 
-def align(string : str, *strings : str, **kwargs):
+def align(string : str, *strings : str, **kwargs) -> str:
     """def align(*strings, gapOpenCost=2, gapExtensionCost=1, matchReward=20, missMatchCost=1, gapSymbol="-", missMatchSymbol="#", trim=False)"""
     if not strings and isinstance(string, str):
         return string
@@ -94,7 +100,7 @@ def align(string : str, *strings : str, **kwargs):
         workSet.append(align2(A, B, **kwargs))
     return workSet[0]
 
-def alignName(string : str, *strings : str, best : bool=False, **kwargs):
+def alignSignature(string : str, *strings : str, best : bool=False, **kwargs):
     from This import this
     from PseudoPathy.Globals import ALLOWED, SPLITTER
 
@@ -114,13 +120,47 @@ def alignName(string : str, *strings : str, best : bool=False, **kwargs):
     
     words = []
     for parts in zip(*tableOfParts):
-        print(parts)
         word = align(parts, gapSymbol="\x01", missMatchSymbol="\x02", trim=True, compressed=True)
         score = (len(word.replace("\x01", "").replace("\x02", ""))) / (sum(map(len, parts)) / len(parts))
 
         words.append((word.replace("\x01", kwargs.get("gapSymbol", "-")).replace("\x02", kwargs.get("missMatchSymbol", "_")), score))
     
-    out = tuple(map(*this[0], filter(lambda x:x[1] > 0.8, words)))
+    out = tuple(map(*this[0], filter(lambda x:x[0] and x[1] > 0.8, words)))
+    if len(out) == 0 or best:
+        return max(words, key=lambda x:x[1])[0]
+    else:
+        return "_".join(reversed(out))
+
+def alignName(string : str, *strings : str, best : bool=False, **kwargs):
+    from This import this
+    from PseudoPathy.Globals import ALLOWED, SPLITTER
+
+    if not strings and isinstance(string, str):
+        return string
+    elif not strings:
+        strings = string
+    else:
+        strings = (string,) + strings
+
+    tableOfParts = [
+        tuple(filter(
+            ALLOWED.fullmatch,
+            reversed(SPLITTER.split(string))
+        )) for string in strings
+    ]
+    
+    import itertools
+    itertools.combinations_with_replacement(tuple(range(max(map(len, tableOfParts)))), len(tableOfParts))
+    
+
+    words = []
+    for parts in zip(*tableOfParts):
+        word = align(parts, gapSymbol="\x01", missMatchSymbol="\x02", trim=True, compressed=True)
+        score = (len(word.replace("\x01", "").replace("\x02", ""))) / (sum(map(len, parts)) / len(parts))
+
+        words.append((word.replace("\x01", kwargs.get("gapSymbol", "-")).replace("\x02", kwargs.get("missMatchSymbol", "_")), score))
+    
+    out = tuple(map(*this[0], filter(lambda x:x[0] and x[1] > 0.8, words)))
     if len(out) == 0 or best:
         return max(words, key=lambda x:x[1])[0]
     else:

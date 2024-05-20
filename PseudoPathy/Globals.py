@@ -9,10 +9,10 @@ random.seed()
 
 
 if os.name == "nt": # Is windows-like path separation
-	SPLITTER = re.compile(f"[.]|[_]|[{os.path.sep}{os.path.sep}]")
+	SPLITTER = re.compile(f"[.]|[-]|[_]|[{os.path.sep}{os.path.sep}]")
 	ALLOWED = re.compile(r"^[^;:/*?\\]+$")
 else:
-	SPLITTER = re.compile(f"[.]|[_]|[{os.path.sep}]")
+	SPLITTER = re.compile(f"[.]|[-]|[_]|[{os.path.sep}]")
 	ALLOWED = re.compile(r"^[^;:/|<>=,]+$")
 
 def unCapitalize(string):
