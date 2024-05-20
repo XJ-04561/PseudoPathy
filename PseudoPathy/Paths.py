@@ -116,8 +116,6 @@ class Path(str):
 			return self / path
 		
 		elif pBackAccess(self, "w"): # Try to make a path for purpose(s).
-			if perms is None:
-				perms = 7
 			try:
 				pMakeDirs(self / path)
 				return self / path
