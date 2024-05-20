@@ -142,13 +142,8 @@ def pMakeDirs(path, mode : int=7, others : int=0):
     ```
     """
 
-    os.makedirs(path, mode=mode<<6 + others<<3 + others, exist_ok=True)
-    if os.access(path, mode=mode):
-        return True
-    os.chmod(path, mode=mode<<6 + mode<<3 + others)
-    if os.access(path, mode=mode):
-        return True
-    os.chmod(path, mode=mode<<6 + mode<<3 + mode)
+    # '755' or 'rwxr-xr-x'
+    os.makedirs(path, mode=493, exist_ok=True)
     if os.access(path, mode=mode):
         return True
     return False

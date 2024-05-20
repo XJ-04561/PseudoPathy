@@ -116,8 +116,10 @@ class Path(str):
 			return self / path
 		
 		elif pBackAccess(self, "w"): # Try to make a path for purpose(s).
+			if perms is None:
+				perms = 7
 			try:
-				pMakeDirs(self / path, mode=pPerms(purpose), others=pPerms(others))
+				pMakeDirs(self / path)
 				return self / path
 			except:
 				pass
@@ -208,16 +210,13 @@ class PathList(tuple):
 	
 	@cached_property
 	def name(self) -> str:
-		from PseudoPathy.FileNameAlignment import align
-		out = align(tuple(pName(p) for p in self), compressed=True, trim=True)
-		if out == "":
-			print(tuple(pName(p) for p in self), "->", repr(out))
-		return out
+		from PseudoPathy.FileNameAlignment import alignName
+		return alignName(tuple(pName(p) for p in self))
 	
 	@cached_property
 	def signature(self) -> str:
-		from PseudoPathy.FileNameAlignment import alignName
-		return alignName(self)
+		from PseudoPathy.FileNameAlignment import alignSignature
+		return alignSignature(self)
 
 class DirectoryList(PathList): pass
 
@@ -225,5 +224,5 @@ class FileList(PathList):
 	
 	@cached_property
 	def signature(self) -> str:
-		from PseudoPathy.FileNameAlignment import alignName
-		return alignName(tuple(p.directory / p.name for p in self))
+		from PseudoPathy.FileNameAlignment import alignSignature
+		return alignSignature(tuple(p.directory / p.name for p in self))

@@ -132,6 +132,7 @@ def alignSignature(string : str, *strings : str, best : bool=False, **kwargs):
         return "_".join(reversed(out))
 
 def alignName(string : str, *strings : str, best : bool=False, **kwargs):
+    """Use with caution! O(n*m), where `m` is the number of "words" in any string. Words are separated using '/', '\\', '_', '-', ' '."""
     from This import this
     from PseudoPathy.Globals import ALLOWED, SPLITTER
 
@@ -150,19 +151,16 @@ def alignName(string : str, *strings : str, best : bool=False, **kwargs):
     ]
     
     import itertools
-    itertools.combinations_with_replacement(tuple(range(max(map(len, tableOfParts)))), len(tableOfParts))
-    
-
+    limits = tuple(map(len, tableOfParts))
     words = []
-    for parts in zip(*tableOfParts):
-        word = align(parts, gapSymbol="\x01", missMatchSymbol="\x02", trim=True, compressed=True)
-        score = (len(word.replace("\x01", "").replace("\x02", ""))) / (sum(map(len, parts)) / len(parts))
+    for indices in itertools.combinations_with_replacement(tuple(range(max(limits))), len(tableOfParts)):
+        if not all(x < y for x,y in zip(indices, limits)):
+            continue
+        word = align((row[i] for i, row in zip(indices, tableOfParts)), gapSymbol="\x01", missMatchSymbol="\x02", trim=True, compressed=True)
+        score = len(word.replace("\x01", "").replace("\x02", "")) / (len(word)+1)
 
         words.append((word.replace("\x01", kwargs.get("gapSymbol", "-")).replace("\x02", kwargs.get("missMatchSymbol", "_")), score))
-    
-    out = tuple(map(*this[0], filter(lambda x:x[0] and x[1] > 0.8, words)))
-    if len(out) == 0 or best:
-        return max(words, key=lambda x:x[1])[0]
-    else:
-        return "_".join(reversed(out))
+
+    print(sorted(words, key=lambda x:x[1], reverse=True)[:10])
+    return max(words, key=lambda x:x[1])[0]
 
