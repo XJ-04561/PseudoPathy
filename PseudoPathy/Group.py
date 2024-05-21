@@ -130,7 +130,7 @@ class PathGroup:
 		if isinstance(other, PathGroup):
 			return self._roots == other._roots
 		elif isinstance(other, str):
-			self._roots == other.split(";")
+			return self._roots == other.split(";")
 		else:
 			return False
 	
