@@ -41,10 +41,10 @@ class SoftwareDirs:
 
 	@cached_property
 	def userCacheDir(self):
-		return appdirs.user_cache_dir(self.SOFTWARE_NAME, self.AUTHOR_NAME, self.VERSION_NAME)
+		return DirectoryPath(appdirs.user_cache_dir(self.SOFTWARE_NAME, self.AUTHOR_NAME, self.VERSION_NAME))
 	@cached_property
 	def userLogDir(self):
-		return appdirs.user_log_dir(self.SOFTWARE_NAME, self.AUTHOR_NAME, self.VERSION_NAME)
+		return DirectoryPath(appdirs.user_log_dir(self.SOFTWARE_NAME, self.AUTHOR_NAME, self.VERSION_NAME))
 
 
 # class Alias:
