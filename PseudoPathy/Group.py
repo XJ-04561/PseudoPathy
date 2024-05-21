@@ -127,9 +127,12 @@ class PathGroup:
 		return None
 
 	def __eq__(self, other):
-		if type(other) != type(self):
+		if isinstance(other, PathGroup):
+			return self._roots == other._roots
+		elif isinstance(other, str):
+			self._roots == other.split(";")
+		else:
 			return False
-		return self._roots == other._roots
 	
 	def prepend(self, path):
 		return path / self
