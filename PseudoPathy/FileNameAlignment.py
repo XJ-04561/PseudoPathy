@@ -161,6 +161,5 @@ def alignName(string : str, *strings : str, best : bool=False, **kwargs):
 
         words.append((word.replace("\x01", kwargs.get("gapSymbol", "-")).replace("\x02", kwargs.get("missMatchSymbol", "_")), score))
 
-    print(sorted(words, key=lambda x:x[1], reverse=True)[:10])
     return max(words, key=lambda x:x[1])[0]
 
