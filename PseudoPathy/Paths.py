@@ -185,20 +185,25 @@ class PathList(tuple):
 	@overload
 	def __new__(cls, *paths): ...
 	def __new__(cls, first, *rest):
-		if not rest:
-			if isinstance(first, str):
-				paths = (Path(first),)
-			else:
-				paths = tuple(map(Path, first))
+		if cls is FileList:
+			pathCls = FilePath
+		elif cls is DirectoryList:
+			pathCls = DirectoryPath
 		else:
-			paths = tuple(map(Path, (first,) + rest))
+			pathCls = Path
+		
+		if not rest and not isinstance(first, str):
+			paths = tuple(map(pathCls, first))
+		else:
+			paths = tuple(map(pathCls, (first,) + rest))
+		
 		if cls is PathList:
 			if all(isinstance(p, FilePath) for p in paths):
 				return super().__new__(FileList, paths)
 			elif all(isinstance(p, DirectoryPath) for p in paths):
 				return super().__new__(DirectoryList, paths)
 		
-		return super().__new__(cls, first)
+		return super().__new__(cls, paths)
 	
 	def __str__(self):
 		return " ".join(self)
