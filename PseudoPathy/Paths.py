@@ -91,12 +91,10 @@ class Path(str):
 	def __getitem__(self, path : str, purpose:str=None) -> str:
 		if type(path) in [slice, int]:
 			return str.__getitem__(self, path)
-		else:
-			if purpose is None:
-				purpose = self.defaultPurpose
-			if pExists(self / path):
-				if pAccess(self / path, purpose):
-					return Path(self / path, purpose=purpose)
+		if not pExists(self / path):
+			return None
+		if pAccess(self / path, purpose or self.defaultPurpose):
+			return Path(self / path, purpose=purpose or self.defaultPurpose)
 		return None
 	
 	def __format__(self, fs):
@@ -105,6 +103,9 @@ class Path(str):
 		except:
 			return f"---------- {str(self).ljust(int('0'+fs[1:])-11) if fs.startswith('<') else str(self).rjust(int('0'+fs[1:])-11) if fs.startswith('>') else str(self).center(int('0'+fs[1:])-11)}"
 	
+	def find(self, path : str, purpose : str=None):
+		return self.__getitem__(path, purpose=purpose)
+
 	def prepend(self, path):
 		return path / self
 
