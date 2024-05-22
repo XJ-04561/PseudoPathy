@@ -192,13 +192,13 @@ class PathList(tuple):
 				paths = tuple(map(Path, first))
 		else:
 			paths = tuple(map(Path, (first,) + rest))
+		if cls is PathList:
+			if all(isinstance(p, FilePath) for p in paths):
+				return super().__new__(FileList, paths)
+			elif all(isinstance(p, DirectoryPath) for p in paths):
+				return super().__new__(DirectoryList, paths)
 		
-		if all(isinstance(p, FilePath) for p in paths):
-			return super().__new__(FileList, paths)
-		elif all(isinstance(p, DirectoryPath) for p in paths):
-			return super().__new__(DirectoryList, paths)
-		else:
-			return super().__new__(cls, first)
+		return super().__new__(cls, first)
 	
 	def __str__(self):
 		return " ".join(self)
