@@ -53,7 +53,7 @@ class Path(str):
 					return obj
 		joined = pJoin(p, *paths)
 		if cls is Path:
-			if pIsFile(joined) or "." in os.path.split(joined)[-1][1:]:
+			if pIsFile(joined): # or "." in os.path.split(joined)[-1][1:]:
 				cls = FilePath
 			elif pIsDir(joined):
 				cls = DirectoryPath
