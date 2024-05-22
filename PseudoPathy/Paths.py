@@ -103,7 +103,7 @@ class Path(str):
 		except:
 			return f"---------- {str(self).ljust(int('0'+fs[1:])-11) if fs.startswith('<') else str(self).rjust(int('0'+fs[1:])-11) if fs.startswith('>') else str(self).center(int('0'+fs[1:])-11)}"
 	
-	def find(self, path : str, purpose : str=None):
+	def find(self, path : str="", purpose : str=None):
 		return self.__getitem__(path, purpose=purpose)
 
 	def prepend(self, path):
