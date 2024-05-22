@@ -22,7 +22,9 @@ class PathGroup:
 	"""The first path with execution permissions."""
 	fullPerms : Path
 	"""The first path with full permissions. If none exists, then tries to create one (Given that at least one path is not existent on the system)"""
-	
+	exists : bool
+	"""Whether any of the directories/files exist on the system."""
+
 	@property
 	def writable(self): return self.create(purpose="w")
 	@property
@@ -31,6 +33,9 @@ class PathGroup:
 	def executable(self): return self.find(purpose="x")
 	@property
 	def fullPerms(self): return self.create(purpose="rwx")
+
+	@property
+	def exists(self): return any(pExists(p) for p in self)
 
 	@cached_property
 	def directory(self):

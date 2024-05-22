@@ -19,7 +19,9 @@ class Path(str):
 	"""The first path with execution permissions."""
 	fullPerms : Path
 	"""The first path with full permissions. If none exists, then tries to create one (Given that at least one path is not existent on the system)"""
-	
+	exists : bool
+	"""Whether the directory/file exists on the system."""
+
 	@property
 	def writable(self): return self.create(purpose="w")
 	@property
@@ -28,6 +30,9 @@ class Path(str):
 	def executable(self): return self.__getitem__("", purpose="x")
 	@property
 	def fullPerms(self): return self.create(purpose="rwx")
+	
+	@property
+	def exists(self): return pExists(self)
 
 	@cached_property
 	def directory(self):
