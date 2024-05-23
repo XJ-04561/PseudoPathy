@@ -63,16 +63,16 @@ class Path(str):
 		return obj
 	
 	def __add__(self, right):
-		return Path(str.__add__(self, right), purpose=self.defaultPurpose)
+		return type(self)(str.__add__(self, right), purpose=self.defaultPurpose)
 
 	def __sub__(self, right):
-		return Path(str.__add__(self.rstrip(os.path.sep), right), purpose=self.defaultPurpose)
+		return type(self)(str.__add__(self.rstrip(os.path.sep), right), purpose=self.defaultPurpose)
 
 	def __truediv__(self, right):
-		return Path(self, right, purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
+		return type(self)(self, right, purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
 	
 	def __rtruediv__(self, left):
-		return Path(left, self, purpose=self.defaultPurpose)
+		return type(self)(left, self, purpose=self.defaultPurpose)
 
 	def __or__(self, right : Path|PathGroup):
 		from PseudoPathy.Group import PathGroup
@@ -210,9 +210,9 @@ class PathList(tuple):
 	
 	def __format__(self, format_spec : str):
 		if format_spec.endswith("n"):
-			self.name
+			return format(self.name, format_spec.rstrip("n"))
 		else:
-			return "'"+"' '".join(self)+"'"
+			return format(" ".join(map(lambda p:"'"+p.strip("'")+"'", self)), format_spec)
 	
 	def __iter__(self) -> Generator[Self,None,None]:
 		return super().__iter__()
