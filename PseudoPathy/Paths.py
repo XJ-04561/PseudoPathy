@@ -98,10 +98,14 @@ class Path(str):
 		return None
 	
 	def __format__(self, fs):
-		try:
-			return f"{stat.filemode(os.stat(self).st_mode)} {str(self).ljust(int('0'+fs[1:])-11) if fs.startswith('<') else str(self).rjust(int('0'+fs[1:])-11)}"
-		except:
-			return f"---------- {str(self).ljust(int('0'+fs[1:])-11) if fs.startswith('<') else str(self).rjust(int('0'+fs[1:])-11) if fs.startswith('>') else str(self).center(int('0'+fs[1:])-11)}"
+		if fs.endswith("s"):
+			fs = fs[:-1]
+			try:
+				return f"{stat.filemode(os.stat(self).st_mode)} {str(self).ljust(int('0'+fs[1:])-11) if fs.startswith('<') else str(self).rjust(int('0'+fs[1:])-11)}"
+			except:
+				return f"---------- {str(self).ljust(int('0'+fs[1:])-11) if fs.startswith('<') else str(self).rjust(int('0'+fs[1:])-11) if fs.startswith('>') else str(self).center(int('0'+fs[1:])-11)}"
+		else:
+			return format(str(self), fs)
 	
 	def find(self, path : str="", purpose : str=None):
 		return self.__getitem__(path, purpose=purpose)
