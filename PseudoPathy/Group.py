@@ -4,7 +4,7 @@ from PseudoPathy.Paths import Path
 
 import re
 # formatPattern = re.compile("^(?P<filler>.)??(?P<direction>[<^>])?(?P<length>[0-9]+)?[.]?(?P<precision>[0-9]+)?(?P<type>[a-z])?$")
-_formatPat = re.compile(r"(\d+)[\[](.+?)[\]]")
+_formatPat = re.compile(r"^(.+?)([<^>])(\d+?)(.*)$")
 
 _LINE_SKIP = object()
 
@@ -108,20 +108,19 @@ class PathGroup:
 	def __iter__(self):
 		return iter(self._roots)
 
-	def __str__(self, indentSize=1, indentChar="  "):
-		indent = indentChar * indentSize
+	def __str__(self):
 		ret = [f"PathGroup at 0x{id(self):0>16x}:"]
 		for p in self._roots:
-			ret.append(f"{indent} | {format(p, '<'+str(80-len(indent)-3))}")
+			ret.append(f" | {p:<50s}")
 		return "\n".join(ret)
 
 	def __format__(self, fs):
 		m = _formatPat.match(fs)
 		if m is not None:
-			indentSize, indentChar = m.groups()
-			return self.__str__(indentSize=indentSize, indentChar=indentChar)
+			indentChar, direction, indentSize, mode = m.groups()
+			return self.__str__().replace("\n", "\n"+indentChar*indentSize)
 		else:
-			return self.__str__()
+			return self.__str__().replace("\n", "\n  ")
 
 	def __getitem__(self, path : str, purpose:str=None) -> Path:
 		from PseudoPathy import FilePath, DirectoryPath

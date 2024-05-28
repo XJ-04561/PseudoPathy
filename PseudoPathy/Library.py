@@ -5,7 +5,7 @@ from PseudoPathy.Paths import Path, FilePath, DirectoryPath
 from PseudoPathy.Group import PathGroup
 from PseudoPathy.PathUtilities import SoftwareDirs
 
-_formatPat = re.compile(r"(\d+)[\[](.+?)[\]]")
+_formatPat = re.compile(r"^(.+?)([<^>])(\d+?)(.*)$")
 _LINE_SKIP = object()
 
 class PathLibrary:
@@ -38,25 +38,22 @@ class PathLibrary:
 	def __delitem__(self, key):
 		delattr(self, key)
 	
-	def __str__(self, indentSize=1, indentChar="  "):
-		indent = indentChar * indentSize
+	def __str__(self):
 		ret = [f"Directories in Library at 0x{id(self):0>16x}:"]
 		for name, p in chain(map(lambda x:(x, getattr(self, x)), filter(lambda x:not x.startswith("_") and x not in self.__dict__, dir(type(self)))), [(_LINE_SKIP, _LINE_SKIP)], vars(self).items()):
 			if p is _LINE_SKIP:
-				ret.append(f"{indent} ||{'-'*(len(indent)-3)}")
-			if not isinstance(p, Path):
-				continue
-			if isinstance(p, (PathGroup, PathLibrary)):
-				ret.append(f"{indent} || {name:<20}"+p.__format__(f"{indentSize+1}[{indentChar}]"))
-			else:
-				ret.append(f"{indent} || {name:<20} {format(p, '<'+str(len(indent)+25))}")
+				ret.append(f" ||{'-'*50}")
+			elif isinstance(p, (Path, PathGroup, PathLibrary)):
+				ret.append(f" || {name:<20} {p:s}")
 		return "\n".join(ret)
 	
 	def __format__(self, fs):
 		m = _formatPat.match(fs)
 		if m is not None:
-			indentSize, indentChar = m.groups
-		return self.__str__(indentSize=indentSize, indentChar=indentChar)
+			indentChar, direction, indentSize, mode = m.groups()
+			return self.__str__().replace("\n", "\n"+indentChar*indentSize)
+		else:
+			return self.__str__().replace("\n", "\n  ")
 	
 	def __len__(self):
 		return len(self._lib)
