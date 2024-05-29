@@ -45,41 +45,33 @@ class PathGroup(Pathy):
 	def file(self):
 		return PathGroup(r.file for r in self._roots)
 
-	def __new__(cls : type["PathGroup"], path : Union[str, Path, "PathGroup", Iterator], *paths : str|Path, purpose : str="r"):
+	def __new__(cls : type["PathGroup"], paths : Iterable[Union[str, Path, "PathGroup", Iterator]], purpose : str="r"):
 		
-		if (not paths) and isinstance(path, PathGroup):
-			if type(path) is not PathGroup:
-				pass
-			elif all(isinstance(p, FilePath) for p in path):
-				path = FileGroup(*path)
-			elif all(isinstance(p, DirectoryPath) for p in path):
-				path = DirectoryGroup(*path)
-			return path
+		if isinstance(paths, (DirectoryGroup, FileGroup)):
+			return paths
 		elif cls is not PathGroup:
 			return super().__new__(cls)
 		
-		if paths:
-			paths = (path,) + paths
-		elif isinstance(path, Iterator):
-			paths = tuple(copy.deepcopy(path))
-		elif isinstance(path, (list, tuple)):
-			paths = tuple(path)
-		else:
-			paths = (path,)
-
-		if all(isinstance(path, FilePath) for path in paths):
-			cls = FileGroup
-		elif all(isinstance(path, DirectoryPath) for path in paths):
-			cls = DirectoryGroup
-
-		return super().__new__(cls)
+		if not isinstance(paths, (Iterable, Iterator)):
+			paths = (paths)
+		elif isinstance(paths, Iterator):
+			paths = tuple(copy.deepcopy(paths))
 		
-	def __init__(self, path : str|Path, *paths : str|Path, purpose : str="r"):
+		if all(isinstance(p, FilePath) for p in paths):
+			return super().__new__(FileGroup)
+		elif all(isinstance(p, DirectoryPath) for p in paths):
+			return super().__new__(DirectoryGroup)
+		else:
+			return super().__new__(cls)
+		
+	def __init__(self, paths : Iterable[Union[str, Path, "PathGroup", Iterator]], purpose : str="r"):
 		from PseudoPathy.Paths import Path
-		if (not paths) and self is path:
+		
+		if self is paths:
 			return # Calling PathGroup on a PathGroup already
-		self.defaultPurpose = purpose
-		self._roots = [Path(p) for p in paths]
+		else:
+			self.defaultPurpose = purpose
+			self._roots = [Path(p) for p in paths]
 
 	def __or__(self, right):
 		if type(right) is PathGroup:

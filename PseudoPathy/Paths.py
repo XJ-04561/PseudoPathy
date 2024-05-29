@@ -42,15 +42,14 @@ class Path(str, Pathy):
 	def file(self):
 		return FilePath(os.path.split(self)[1]) if "." in os.path.split(self)[1][1:] else None
 
-	def __new__(cls, /, p=".", *paths, purpose="r"):
+	@overload
+	def __new__(cls, /, p=".", *paths, purpose="r"): ...
+	def __new__(cls, /, p=".", *paths, purpose=None):
 		if not paths:
 			if isinstance(p, Path):
-				if p.defaultPurpose == purpose:
-					return p
-				else:
-					obj = super().__new__(cls if type(p) is Path else type(p), p)
-					obj.defaultPurpose = purpose
-					return obj
+				if purpose is not None:
+					p.defaultPurpose = purpose
+				return p
 		joined = pJoin(p, *paths)
 		if cls is Path:
 			if pIsFile(joined): # or "." in os.path.split(joined)[-1][1:]:
@@ -59,7 +58,8 @@ class Path(str, Pathy):
 				cls = DirectoryPath
 		
 		obj = super(Path, cls).__new__(cls, joined)
-		obj.defaultPurpose = purpose
+		if purpose is not None:
+			obj.defaultPurpose = purpose
 		return obj
 	
 	def __add__(self, right):
