@@ -45,19 +45,26 @@ class Path(str, Pathy):
 	@overload
 	def __new__(cls, /, p=".", *paths, purpose="r"): ...
 	def __new__(cls, /, p=".", *paths, purpose=None):
-		if not paths:
-			if isinstance(p, Path):
-				if purpose is not None:
-					p.defaultPurpose = purpose
-				return p
-		joined = pJoin(p, *paths)
-		if cls is Path:
-			if pIsFile(joined): # or "." in os.path.split(joined)[-1][1:]:
-				cls = FilePath
-			elif pIsDir(joined):
-				cls = DirectoryPath
-		
-		obj = super(Path, cls).__new__(cls, joined)
+
+		if paths or isinstance(p, str):
+			joined = pJoin(p, *paths)
+		elif type(p) is cls:
+			if purpose is not None:
+				p.defaultPurpose = purpose
+			return p
+		elif isinstance(p, (Iterable, Iterator)):
+			joined = pJoin(*p)
+		else:
+			joined = p
+			
+		if cls is not Path:
+			pass
+		elif pIsFile(joined): # or "." in os.path.split(joined)[-1][1:]:
+			cls = FilePath
+		elif pIsDir(joined):
+			cls = DirectoryPath
+			
+		obj = super().__new__(cls, joined)
 		obj.defaultPurpose = purpose if purpose is not None else "r"
 		return obj
 	

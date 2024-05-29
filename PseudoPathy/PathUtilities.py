@@ -24,7 +24,7 @@ class SoftwareDirs:
 		return DirectoryPath(appdirs.user_data_dir(self.SOFTWARE_NAME, self.AUTHOR_NAME, self.VERSION_NAME, self.ROAMING))
 	@cached_property
 	def siteDataDir(self):
-		return PathGroup(*appdirs.site_data_dir(self.SOFTWARE_NAME, self.AUTHOR_NAME, self.VERSION_NAME, multipath=True).split(os.pathsep))
+		return PathGroup(appdirs.site_data_dir(self.SOFTWARE_NAME, self.AUTHOR_NAME, self.VERSION_NAME, multipath=True).split(os.pathsep))
 	@cached_property
 	def dataDir(self):
 		return self.siteDataDir | self.userDataDir
@@ -34,7 +34,7 @@ class SoftwareDirs:
 		return DirectoryPath(appdirs.user_config_dir(self.SOFTWARE_NAME, self.AUTHOR_NAME, self.VERSION_NAME, self.ROAMING))
 	@cached_property
 	def siteConfigDir(self):
-		return PathGroup(*appdirs.site_config_dir(self.SOFTWARE_NAME, self.AUTHOR_NAME, self.VERSION_NAME, multipath=True).split(os.pathsep))
+		return PathGroup(appdirs.site_config_dir(self.SOFTWARE_NAME, self.AUTHOR_NAME, self.VERSION_NAME, multipath=True).split(os.pathsep))
 	@cached_property
 	def configDir(self):
 		return self.siteConfigDir | self.userConfigDir
@@ -109,7 +109,7 @@ class SoftwareDirs:
 # 		if os.pathsep not in (path := _fget(instance)):
 # 			return Path(path)
 # 		else:
-# 			return PathGroup(*path.split(os.pathsep))
+# 			return PathGroup(path.split(os.pathsep))
 	
 # 	def __new__(cls, fget, fset=None, fdel=None, doc=None):
 # 		return super().__new__(cls, cls.fget.__get__(fget,type(fget)), fset, fdel, doc)
@@ -163,4 +163,4 @@ class SoftwareDirs:
 # 		if os.pathsep not in (path := Alias.__get__(self, instance)):
 # 			return Path(path)
 # 		else:
-# 			return PathGroup(*path.split(os.pathsep))
+# 			return PathGroup(path.split(os.pathsep))
