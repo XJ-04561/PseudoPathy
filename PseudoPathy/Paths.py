@@ -58,8 +58,7 @@ class Path(str, Pathy):
 				cls = DirectoryPath
 		
 		obj = super(Path, cls).__new__(cls, joined)
-		if purpose is not None:
-			obj.defaultPurpose = purpose
+		obj.defaultPurpose = purpose if purpose is not None else "r"
 		return obj
 	
 	def __add__(self, right):
