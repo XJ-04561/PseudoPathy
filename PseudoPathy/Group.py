@@ -79,15 +79,15 @@ class PathGroup(Pathy):
 
 	def __or__(self, right):
 		if type(right) is PathGroup:
-			return PathGroup(*self._roots, *right._roots, purpose=right.defaultPurpose)
+			return PathGroup(self._roots + right._roots, purpose=right.defaultPurpose)
 		else:
-			return PathGroup(*self._roots, right, purpose=self.defaultPurpose)
+			return PathGroup(self._roots + [right], purpose=self.defaultPurpose)
 	
 	def __ror__(self, left):
 		if type(left) is PathGroup:
-			return PathGroup(*left._roots, *self._roots, purpose=left.defaultPurpose+self.defaultPurpose)
+			return PathGroup(left._roots + self._roots, purpose=left.defaultPurpose+self.defaultPurpose)
 		else:
-			return PathGroup(left, *self._roots, purpose=self.defaultPurpose)
+			return PathGroup([left] + self._roots, purpose=self.defaultPurpose)
 		
 	def __ior__(self, right):
 		if type(right) is PathGroup:
@@ -96,25 +96,25 @@ class PathGroup(Pathy):
 			self._roots.append(right)
 	
 	def __add__(self, right):
-		return PathGroup(*[r + right for r in self._roots], purpose=self.defaultPurpose)
+		return PathGroup((r + right for r in self._roots), purpose=self.defaultPurpose)
 	
 	def __iadd__(self, right):
 		for i in range(len(self._roots)):
 			self._roots[i] = self._roots[i] + right
 
 	def __sub__(self, right):
-		return PathGroup(*[r - right for r in self._roots], purpose=self.defaultPurpose)
+		return PathGroup((r - right for r in self._roots), purpose=self.defaultPurpose)
 	
 	def __isub__(self, right):
 		for i in range(len(self._roots)):
 			self._roots[i] = self._roots[i] - right
 
 	def __truediv__(self, right):
-		return PathGroup(*(r / right for r in self._roots), purpose=self.defaultPurpose)
+		return PathGroup((r / right for r in self._roots), purpose=self.defaultPurpose)
 	
 	def __rtruediv__(self, left):
 		if type(left) is PathGroup: return NotImplemented
-		return PathGroup(*(left / r for r in self._roots), purpose=self.defaultPurpose)
+		return PathGroup((left / r for r in self._roots), purpose=self.defaultPurpose)
 	
 	def __itruediv__(self, right):
 		self._roots = [r / right for r in self._roots]

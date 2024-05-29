@@ -18,10 +18,10 @@ def test_compatibility():
 
 	import sys
 	execDir, execFile = os.path.split(sys.executable)
-	assert PathGroup(sys.executable, os.path.split(sys.executable)[0]) == (Path(sys.executable) | Path(os.path.split(sys.executable)[0]))
+	assert PathGroup([sys.executable, os.path.split(sys.executable)[0]]) == (Path(sys.executable) | Path(os.path.split(sys.executable)[0]))
 	assert PathGroup(
-		execDir,
-		os.path.split(execDir)[0]
+		[execDir,
+		os.path.split(execDir)[0]]
 		).find(execFile) == sys.executable
 
 def test_filenameAlignment():

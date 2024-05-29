@@ -75,11 +75,17 @@ class Path(str, Pathy):
 
 	def __or__(self, right : Path|PathGroup):
 		from PseudoPathy.Group import PathGroup
-		return PathGroup(self, *right, purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
+		if isinstance(right, (Iterable, Iterator)):
+			return PathGroup([self] + list(right), purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
+		else:
+			return PathGroup([self, right], purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
 	
 	def __ror__(self, left : Path|PathGroup):
 		from PseudoPathy.Group import PathGroup
-		return PathGroup(*left, self, purpose=self.defaultPurpose or getattr(left, "defaultPurpose", None))
+		if isinstance(left, (Iterable, Iterator)):
+			return PathGroup(list(left) + [self], purpose=self.defaultPurpose or getattr(left, "defaultPurpose", None))
+		else:
+			return PathGroup([left, self], purpose=self.defaultPurpose or getattr(left, "defaultPurpose", None))
 		
 	def __iter__(self) -> list[Path]:
 		return iter([self])
