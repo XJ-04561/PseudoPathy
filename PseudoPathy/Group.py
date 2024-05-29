@@ -52,6 +52,10 @@ class PathGroup(Pathy):
 		elif cls is not PathGroup:
 			return super().__new__(cls)
 		
+		if isinstance(paths, Path):
+			paths = (paths)
+		elif isinstance(paths, str):
+			paths = tuple(paths.split(os.pathsep))
 		if not isinstance(paths, (Iterable, Iterator)):
 			paths = (paths)
 		elif isinstance(paths, Iterator):
@@ -66,7 +70,7 @@ class PathGroup(Pathy):
 		
 	def __init__(self, paths : Iterable[Union[str, Path, "PathGroup", Iterator]], purpose : str="r"):
 		from PseudoPathy.Paths import Path
-		
+
 		if self is paths:
 			return # Calling PathGroup on a PathGroup already
 		else:
