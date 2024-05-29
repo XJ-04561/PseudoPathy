@@ -86,10 +86,13 @@ class Path(str, Pathy):
 		return type(self)(str.__add__(self.rstrip(os.path.sep), right), purpose=self.defaultPurpose)
 
 	def __truediv__(self, right):
-		return Path(self, right, purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
+		if isinstance(right, Path):
+			return type(right)(self, right, purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
+		else:
+			return Path(self, right, purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
 	
 	def __rtruediv__(self, left):
-		return Path(left, self, purpose=self.defaultPurpose)
+		return type(self)(left, self, purpose=self.defaultPurpose)
 
 	def __or__(self, right : Path|PathGroup):
 		from PseudoPathy.Group import PathGroup
