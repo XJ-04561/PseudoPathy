@@ -37,45 +37,50 @@ class PathGroup(Pathy):
 	@property
 	def exists(self): return any(pExists(p) for p in self)
 
-	@cached_property
+	@property
 	def directory(self):
 		return PathGroup(r.directory for r in self._roots)
 	
-	@cached_property
+	@property
 	def file(self):
 		return PathGroup(r.file for r in self._roots)
-
-	def __new__(cls : type["PathGroup"], paths : Iterable[Union[str, Path, "PathGroup", Iterator]], purpose : str="r"):
+	@overload
+	def __new__(cls : type["PathGroup"], paths : Iterable[Union[str, Path, "PathGroup", Iterator]], purpose : str="r"): ...
+	def __new__(cls : type["PathGroup"], paths : Iterable[Union[str, Path, "PathGroup", Iterator]], purpose : str=None):
 		
-		if isinstance(paths, (DirectoryGroup, FileGroup)):
+		if type(paths) is cls or isinstance(paths, PathGroup) and cls is PathGroup:
 			return paths
-		elif cls is not PathGroup:
-			return super().__new__(cls)
 		
+		if cls is not PathGroup:
+			obj = super().__new__(cls)
+		elif all(isinstance(p, FilePath) for p in paths):
+			obj = super().__new__(FileGroup)
+		elif all(isinstance(p, DirectoryPath) for p in paths):
+			obj = super().__new__(DirectoryGroup)
+		else:
+			obj = super().__new__(cls)
+		
+		if isinstance(obj, FileGroup):
+			PathClass = FilePath
+		elif isinstance(obj, DirectoryGroup):
+			PathClass = DirectoryPath
+		else:
+			PathClass = Path
+
 		if isinstance(paths, Path):
 			paths = (paths)
 		elif isinstance(paths, str):
 			paths = tuple(paths.split(os.pathsep))
-		if not isinstance(paths, (Iterable, Iterator)):
-			paths = (paths)
-		elif isinstance(paths, Iterator):
-			paths = tuple(copy.deepcopy(paths))
+		elif not isinstance(paths, (Iterable, Iterator)):
+			paths = (paths,)
 		
-		if all(isinstance(p, FilePath) for p in paths):
-			return super().__new__(FileGroup)
-		elif all(isinstance(p, DirectoryPath) for p in paths):
-			return super().__new__(DirectoryGroup)
-		else:
-			return super().__new__(cls)
-		
+		obj.defaultPurpose = purpose or getattr(obj, "defaultPurpose", None) or "r"
+		obj._roots = [PathClass(p) for p in paths]
+		return obj
+	
+	@final
 	def __init__(self, paths : Iterable[Union[str, Path, "PathGroup", Iterator]], purpose : str="r"):
-		from PseudoPathy.Paths import Path
-
-		if self is paths:
-			return # Calling PathGroup on a PathGroup already
-		else:
-			self.defaultPurpose = purpose
-			self._roots = [Path(p) for p in paths]
+		pass
 
 	def __or__(self, right):
 		if type(right) is PathGroup:

@@ -34,11 +34,11 @@ class Path(str, Pathy):
 	@property
 	def exists(self): return pExists(self)
 
-	@cached_property
+	@property
 	def directory(self):
 		return DirectoryPath(os.path.split(self)[0]) if "." in os.path.split(self)[1][1:] else self
 	
-	@cached_property
+	@property
 	def file(self):
 		return FilePath(os.path.split(self)[1]) if "." in os.path.split(self)[1][1:] else None
 
@@ -150,11 +150,11 @@ class Path(str, Pathy):
 class DirectoryPath(Path, Directory):
 	""""""
 	
-	@cached_property
+	@property
 	def directory(self) -> Self:
 		return self
 	
-	@cached_property
+	@property
 	def file(self) -> None:
 		return None
 
@@ -177,11 +177,11 @@ class FilePath(Path, File):
 		following the last dot of the file, instead of appending the new file extension behind the old one."""
 		return FilePath(self.rsplit(".", 1)[0]+"."+value.lstrip("."))
 	
-	@cached_property
+	@property
 	def directory(self) -> DirectoryPath:
 		return DirectoryPath(os.path.split(self)[0])
 	
-	@cached_property
+	@property
 	def file(self) -> Self:
 		return FilePath(os.path.split(self)[1])
 

@@ -1,5 +1,5 @@
 
-import tempfile, random
+import tempfile
 
 import PseudoPathy.Globals as Globals
 from PseudoPathy.PathShortHands import *
@@ -47,12 +47,3 @@ def createTempFile(prefix : str=None, suffix : str=None, ext : str=None, *, dir 
 	outPath = tempfile.NamedTemporaryFile(suffix=suffix, prefix=prefix, dir=dir)
 	Globals.OPEN_PATHS.append(outPath)
 	return FilePath(outPath.name)
-
-# def getUniqueName(path : Path, prefix : str="", ext : str=None):
-# 	"""Finds a randomized name that does not already exist in the given directory."""
-# 	n=0
-# 	while n < 1000000 and os.path.exists(path / (newName := "{}_{}{}{}".format(prefix, *random.random().as_integer_ratio(), "."+ext.lstrip(".") if ext is not None else ""))):
-# 		n+=1
-# 	if not n < 1000000:
-# 		raise FileExistsError(f"Could not generate random file/directory name for path='{path}' after {n} attempts")
-# 	return path / newName
