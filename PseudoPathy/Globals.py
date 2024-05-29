@@ -3,7 +3,7 @@
 import os, shutil, random, sys, logging, re, copy, stat, appdirs
 from functools import cached_property
 from itertools import chain
-from typing import overload, Literal, Container, Any, Callable, Generator, Self, Union
+from typing import overload, Literal, Container, Any, Callable, Generator, Self, Union, Iterator
 from This import this
 random.seed()
 

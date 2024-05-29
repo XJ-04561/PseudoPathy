@@ -45,7 +45,7 @@ class PathGroup(Pathy):
 	def file(self):
 		return PathGroup(r.file for r in self._roots)
 
-	def __new__(cls : type["PathGroup"], path : Union[str, Path, "PathGroup"], *paths : str|Path, purpose : str="r"):
+	def __new__(cls : type["PathGroup"], path : Union[str, Path, "PathGroup", Iterator], *paths : str|Path, purpose : str="r"):
 		
 		if (not paths) and isinstance(path, PathGroup):
 			if type(path) is not PathGroup:
@@ -58,12 +58,14 @@ class PathGroup(Pathy):
 		elif cls is not PathGroup:
 			return super().__new__(cls)
 		
-		if not paths and isinstance(path, (list, tuple, Generator)):
-			paths = tuple(path)
-		elif not paths:
-			paths = (path,)
-		else:
+		if paths:
 			paths = (path,) + paths
+		elif isinstance(path, Iterator):
+			paths = tuple(copy.deepcopy(path))
+		elif isinstance(path, (list, tuple)):
+			paths = tuple(path)
+		else:
+			paths = (path,)
 
 		if all(isinstance(path, FilePath) for path in paths):
 			cls = FileGroup
