@@ -182,7 +182,11 @@ class PathGroup(Pathy):
 	def create(self, path : str="", purpose : str=None, others : str="r") -> Path:
 		'''Should not be used to create files, only directories!'''
 		# Try to find existing path for purpose(s).
-		paths = tuple(map(Path(path).prepend, self._roots))
+		if path:
+			paths = tuple(map(lambda r:r / path, self._roots))
+		else:
+			paths = self._roots
+		
 		for p in paths:
 			if pAccess(p, purpose or self.defaultPurpose):
 				return p
