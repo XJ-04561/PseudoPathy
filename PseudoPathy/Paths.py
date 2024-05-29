@@ -69,16 +69,27 @@ class Path(str, Pathy):
 		return obj
 	
 	def __add__(self, right):
-		return type(self)(str.__add__(self, right), purpose=self.defaultPurpose)
+		if isinstance(right, Path):
+			return type(right)(str.__add__(self, right), purpose=self.defaultPurpose)
+		elif isinstance(right, str):
+			return type(self)(str.__add__(self, right), purpose=self.defaultPurpose)
+		else:
+			return NotImplemented
 
+	def __radd__(self, left):
+		if isinstance(left, str):
+			return type(self)(str.__add__(left, self), purpose=self.defaultPurpose)
+		else:
+			return NotImplemented
+		
 	def __sub__(self, right):
 		return type(self)(str.__add__(self.rstrip(os.path.sep), right), purpose=self.defaultPurpose)
 
 	def __truediv__(self, right):
-		return type(self)(self, right, purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
+		return Path(self, right, purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
 	
 	def __rtruediv__(self, left):
-		return type(self)(left, self, purpose=self.defaultPurpose)
+		return Path(left, self, purpose=self.defaultPurpose)
 
 	def __or__(self, right : Path|PathGroup):
 		from PseudoPathy.Group import PathGroup
