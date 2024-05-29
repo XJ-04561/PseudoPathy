@@ -76,7 +76,7 @@ class PathGroup(Pathy):
 		
 	def __init__(self, path : str|Path, *paths : str|Path, purpose : str="r"):
 		from PseudoPathy.Paths import Path
-		if (not paths) and isinstance(path, PathGroup):
+		if (not paths) and self is path:
 			return # Calling PathGroup on a PathGroup already
 		self.defaultPurpose = purpose
 		self._roots = [Path(p) for p in paths]
