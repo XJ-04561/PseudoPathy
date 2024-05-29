@@ -1,6 +1,6 @@
 
 from PseudoPathy.Globals import *
-from PseudoPathy.Paths import Path
+from PseudoPathy.Paths import Path, FilePath, DirectoryPath
 
 import re
 # formatPattern = re.compile("^(?P<filler>.)??(?P<direction>[<^>])?(?P<length>[0-9]+)?[.]?(?P<precision>[0-9]+)?(?P<type>[a-z])?$")
@@ -8,7 +8,7 @@ _formatPat = re.compile(r"^(.+?)([<^>])(\d+?)(.*)$")
 
 _LINE_SKIP = object()
 
-class PathGroup:
+class PathGroup(Pathy):
 	""""""
 
 	_roots : list[Path]
@@ -45,8 +45,19 @@ class PathGroup:
 	def file(self):
 		return PathGroup(r.file for r in self._roots)
 
-	def __init__(self, path, *paths : tuple[str], purpose="r"):
-		from PseudoPathy.Paths import Path
+	def __new__(cls : type["PathGroup"], path : Union[str, Path, "PathGroup"], *paths : str|Path, purpose : str="r"):
+		
+		if (not paths) and isinstance(path, PathGroup):
+			if type(path) is not PathGroup:
+				pass
+			elif all(isinstance(p, FilePath) for p in path):
+				path = FileGroup(*path)
+			elif all(isinstance(p, DirectoryPath) for p in path):
+				path = DirectoryGroup(*path)
+			return path
+		elif cls is not PathGroup:
+			return super().__new__(cls)
+		
 		if not paths and isinstance(path, (list, tuple, Generator)):
 			paths = tuple(path)
 		elif not paths:
@@ -54,6 +65,17 @@ class PathGroup:
 		else:
 			paths = (path,) + paths
 
+		if all(isinstance(path, FilePath) for path in paths):
+			cls = FileGroup
+		elif all(isinstance(path, DirectoryPath) for path in paths):
+			cls = DirectoryGroup
+
+		return super().__new__(cls)
+		
+	def __init__(self, path : str|Path, *paths : str|Path, purpose : str="r"):
+		from PseudoPathy.Paths import Path
+		if (not paths) and isinstance(path, PathGroup):
+			return # Calling PathGroup on a PathGroup already
 		self.defaultPurpose = purpose
 		self._roots = [Path(p) for p in paths]
 
@@ -167,3 +189,6 @@ class PathGroup:
 				return out
 		return None
 
+class DirectoryGroup(PathGroup, Directory): pass
+
+class FileGroup(PathGroup, File): pass

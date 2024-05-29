@@ -7,7 +7,7 @@ import PseudoPathy.Globals as Globals
 class Path: pass
 class PathGroup: pass
 
-class Path(str):
+class Path(str, Pathy):
 	""""""
 
 	defaultPurpose : str
@@ -135,7 +135,7 @@ class Path(str):
 			LOGGER.debug(f"pBackAccess({self!r}, \"w\") is False")
 		return None
 
-class DirectoryPath(Path):
+class DirectoryPath(Path, Directory):
 	""""""
 	
 	@cached_property
@@ -146,7 +146,7 @@ class DirectoryPath(Path):
 	def file(self) -> None:
 		return None
 
-class FilePath(Path):
+class FilePath(Path, File):
 	""""""
 
 	@property
@@ -173,13 +173,42 @@ class FilePath(Path):
 	def file(self) -> Self:
 		return FilePath(os.path.split(self)[1])
 
-class UniqueFilePath(Path):
+class UniqueFilePath(FilePath, Unique):
+	"""If the path string given to instantiate is an existing directory, a "tempfile-[RANDOM].tmp" is created. Else if
+	the path one step back is an existing directory, the basename of the path is provided as a prefix for the file
+	name, and if the basename has a "." in it, everything after the first dot will be used as the file extension.
+	Examples:
+		Full path exists as a directory:
+		"/home/fresor/.local/MyApp/tmp/" -> "/home/fresor/.local/MyApp/tmp/tempfile-[RANDOM].tmp"
+		Full path except last segment exists as a directory:
+		"/home/fresor/.local/MyApp/tmp/Session-2.txt.zip" -> "/home/fresor/.local/MyApp/tmp/Session-2-[RANDOM].txt.zip"
+	"""
 	
 	def __new__(cls, /, p=".", *paths, purpose="w"):
 		import tempfile
-		dir, prefix = os.path.split(pJoin(p, *paths).rstrip(os.path.sep))
+		path = pJoin(p, *paths)
+		if pIsDir(path):
+			dirname, filename = path, "tempfile.tmp"
+		elif pIsDir(os.path.split(path)[0]):
+			dirname, filename = os.path.split(path)
+		else:
+			raise NotADirectoryError(f"Neither {path} nor {os.path.split(path)[0]} is an existing directory, thus no unique file can be created there.")
+		prefix, ext = os.path.splitext(filename)
+		return super().__new__(cls, tempfile.mkstemp(dir=dirname, prefix=prefix+"-[", suffix="]"+ext), purpose=purpose)
+
+class UniqueDirectoryPath(DirectoryPath, Unique):
+	"""If path string has a trailing separator (i.e. "/" or "\\") then a directory with a fully random name is created inside of the directory. If no trailing separator exists, then the last """
+	
+	def __new__(cls, /, p=".", *paths, purpose="w"):
+		import tempfile
+		path = pJoin(p, *paths)
+
+		if path.endswith(os.path.sep):
+			dirname, prefix = path, "tempdir"
+		else:
+			dirname, prefix = os.path.split(path)
 		
-		return FilePath(tempfile.mkdtemp(dir=dir, prefix=prefix+"-[", suffix="]"), purpose=purpose)
+		return super().__new__(cls, tempfile.mkdtemp(dir=dirname, prefix=prefix+"-[", suffix="]"), purpose=purpose)
 
 class PathList(tuple):
 	"""Is not based on the `list` type, as mutability is not desired, but the name is used for ease of learning for

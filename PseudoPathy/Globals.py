@@ -3,7 +3,7 @@
 import os, shutil, random, sys, logging, re, copy, stat, appdirs
 from functools import cached_property
 from itertools import chain
-from typing import overload, Literal, Container, Any, Callable, Generator, Self
+from typing import overload, Literal, Container, Any, Callable, Generator, Self, Union
 from This import this
 random.seed()
 
@@ -30,6 +30,13 @@ class Executable(metaclass=PathPermsMeta):
 	code : int = 1
 class FullPerms(metaclass=PathPermsMeta):
 	code : int = 7
+
+class Pathy: pass
+class Directory: pass
+class File: pass
+class Unique: pass
+
+OPEN_PATHS = []
 
 LOGGER = logging.Logger("PseudoPathy", level=logging.FATAL)
 """`logging.Logger` object to use."""

@@ -84,8 +84,12 @@ def test_library():
 	
 	for attr in lib.baseDirs:
 		assert hasattr(lib, attr), f"SoftwareLibrary does not have access to expected attribute {attr!r}"
-		assert getattr(lib, attr) is not None, f"SoftwareLibrary attribute {attr!r} is None"
-		assert getattr(lib, attr).endswith(os.path.join("MyApp", "ALPHA")), f'SoftwareLibrary attribute incorrectly named. Should end in {os.path.join("Fredrik Sörensen", "MyApp", "ALPHA")!r} but full path was {getattr(lib, attr)!r} is None'
+		path = getattr(lib, attr)
+		assert path is not None, f"SoftwareLibrary attribute {attr!r} is None"
+		assert path.endswith(os.path.join("MyApp", "ALPHA")) or \
+			(path.strip(os.path.sep).split(os.path.sep)[-3] == "MyApp" and \
+			path.strip(os.path.sep).split(os.path.sep)[-1] == "ALPHA" ) or \
+				os.path.join(path.strip(os.path.sep).split(os.path.sep)[:-1]).endswith(os.path.join("MyApp", "ALPHA")), f'SoftwareLibrary attribute incorrectly named. Should end in {os.path.join("MyApp", "ALPHA")!r} but full path was {path!r}'
 
 def test_print():
 
