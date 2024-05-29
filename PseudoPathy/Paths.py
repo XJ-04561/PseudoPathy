@@ -206,7 +206,7 @@ class UniqueFilePath(FilePath, Unique):
 		else:
 			raise NotADirectoryError(f"Neither {path} nor {os.path.split(path)[0]} is an existing directory, thus no unique file can be created there.")
 		prefix, ext = os.path.splitext(filename)
-		return super().__new__(cls, tempfile.mkstemp(dir=dirname, prefix=prefix+"-[", suffix="]"+ext), purpose=purpose)
+		return super().__new__(cls, tempfile.mkstemp(dir=dirname, prefix=prefix+"-[", suffix="]"+ext)[1], purpose=purpose)
 
 class UniqueDirectoryPath(DirectoryPath, Unique):
 	"""If path string has a trailing separator (i.e. "/" or "\\") then a directory with a fully random name is created inside of the directory. If no trailing separator exists, then the last """
