@@ -38,7 +38,7 @@ def test_filenameAlignment():
 	assert fileList.name == "myfile", f'{fileList.name} == {"myfile"}'
 
 	expected = (curDir / "myfile").split(":\\")[-1] if os.name == "nt" else (curDir / "myfile")
-	expected = "_".join(filter(len, expected.split(os.path.sep)))
+	expected = "_".join(filter(len, expected.replace("-", "_").replace(".", "_").split(os.path.sep)))
 	assert fileList.signature == expected, f"{fileList.signature} == {expected}"
 
 	dir1 = userDir / "Documents" 
