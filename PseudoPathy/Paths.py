@@ -72,7 +72,7 @@ class Path(str, Pathy):
 		if isinstance(right, Path):
 			return type(right)(str.__add__(self, right), purpose=self.defaultPurpose)
 		elif isinstance(right, str):
-			return type(self)(str.__add__(self, right), purpose=self.defaultPurpose)
+			return Path(str.__add__(self, right), purpose=self.defaultPurpose)
 		else:
 			return NotImplemented
 
