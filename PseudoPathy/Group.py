@@ -51,6 +51,15 @@ class PathGroup(Pathy):
 		if type(paths) is cls or isinstance(paths, PathGroup) and cls is PathGroup:
 			return paths
 		
+		if isinstance(paths, Path):
+			paths = (paths, )
+		elif isinstance(paths, str):
+			paths = tuple(paths.split(os.pathsep))
+		elif not isinstance(paths, (Iterable, Iterator)):
+			paths = (paths,)
+		elif isinstance(paths, Iterator):
+			paths = tuple(paths)
+
 		if cls is not PathGroup:
 			obj = super().__new__(cls)
 		elif all(isinstance(p, FilePath) for p in paths):
@@ -67,13 +76,6 @@ class PathGroup(Pathy):
 		else:
 			PathClass = Path
 
-		if isinstance(paths, Path):
-			paths = (paths)
-		elif isinstance(paths, str):
-			paths = tuple(paths.split(os.pathsep))
-		elif not isinstance(paths, (Iterable, Iterator)):
-			paths = (paths,)
-		
 		obj.defaultPurpose = purpose or getattr(obj, "defaultPurpose", None) or "r"
 		obj._roots = [PathClass(p) for p in paths]
 		return obj
