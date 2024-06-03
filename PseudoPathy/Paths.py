@@ -165,7 +165,7 @@ class DirectoryPath(Path, Directory):
 	""""""
 	
 	@property
-	def directory(self) -> Self:
+	def directory(self) -> "DirectoryPath":
 		return self
 	
 	@property
@@ -196,7 +196,7 @@ class FilePath(Path, File):
 		return DirectoryPath(os.path.split(self)[0])
 	
 	@property
-	def file(self) -> Self:
+	def file(self) -> "FilePath":
 		return FilePath(os.path.split(self)[1])
 
 class UniqueFilePath(FilePath, Unique):
@@ -273,7 +273,7 @@ class PathList(tuple):
 		else:
 			return format(" ".join(map(lambda p:"'"+p.strip("'")+"'", self)), format_spec)
 	
-	def __iter__(self) -> Generator[Self,None,None]:
+	def __iter__(self) -> Generator["PathList",None,None]:
 		return super().__iter__()
 	
 	@cached_property
