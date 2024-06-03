@@ -3,7 +3,7 @@
 import os, shutil, sys, logging, re, stat, appdirs
 from functools import cached_property
 from itertools import chain
-from typing import overload, Literal, Container, Any, Callable, Generator, Self, Union, Iterator, Iterable, final
+from typing import overload, Literal, Container, Any, Callable, Generator, Union, Iterator, Iterable, final
 from This import this
 
 if os.name == "nt": # Is windows-like path separation
