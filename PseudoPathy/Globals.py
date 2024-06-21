@@ -3,6 +3,7 @@
 import os, shutil, sys, logging, re, stat, appdirs
 from functools import cached_property
 from itertools import chain
+import itertools
 from typing import overload, Literal, Container, Any, Callable, Generator, Union, Iterator, Iterable, final
 from This import this
 

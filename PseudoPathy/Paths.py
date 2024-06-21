@@ -181,10 +181,10 @@ class FilePath(Path, File):
 	def fullPerms(self): return self.find(purpose="rwx")
 	@property
 	def ext(self) -> str:
-		return self.file.partition(".")[-1]
+		return ".".join(list(itertools.dropwhile(lambda x:x=="", self.file.split(".")))[1:])
 	@property
 	def name(self) -> str:
-		return self.file.partition(".")[0]
+		return ".".join([*itertools.takewhile(lambda x:x=="", self.file.split(".")), next(filter(None, self.file.split(".")), "")])
 	
 	def __lshift__(self, value : str):
 		"""Creates a version of the `FilePath` with the right string as the file extension. This changes the text
