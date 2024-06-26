@@ -26,7 +26,7 @@ def createTemp(dir : Path|PathGroup=None, prefix : str=None, suffix : str=None, 
 def createTempDir(prefix : str=None, suffix : str=None, *, dir : DirectoryPath|DirectoryGroup=None) -> DirectoryPath:
 	if isinstance(dir, Globals.Pathy):
 		dir = dir.writable
-	else:
+	elif isinstance(dir, str):
 		pMakeDirs(dir)
 	prefix = f"{prefix}-[" if prefix else "["
 	suffix = f"]-{suffix}" if suffix else "]"
