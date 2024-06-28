@@ -143,23 +143,25 @@ def alignName(string : str, *strings : str, best : bool=False, **kwargs):
     else:
         strings = (string,) + strings
 
-    tableOfParts = [
-        tuple(filter(
-            ALLOWED.fullmatch,
-            reversed(SPLITTER.split(string))
-        )) for string in strings
-    ]
+    return align(strings, gapSymbol="-", missMatchSymbol="-", trim=True, compressed=True)
+
+    # tableOfParts = [
+    #     tuple(filter(
+    #         ALLOWED.fullmatch,
+    #         reversed(SPLITTER.split(string))
+    #     )) for string in strings
+    # ]
     
-    import itertools
-    limits = tuple(map(len, tableOfParts))
-    words = []
-    for indices in itertools.combinations_with_replacement(tuple(range(max(limits))), len(tableOfParts)):
-        if not all(x < y for x,y in zip(indices, limits)):
-            continue
-        word = align((row[i] for i, row in zip(indices, tableOfParts)), gapSymbol="\x01", missMatchSymbol="\x02", trim=True, compressed=True)
-        score = len(word.replace("\x01", "").replace("\x02", "")) / (len(word)+1)
+    # import itertools
+    # limits = tuple(map(len, tableOfParts))
+    # words = []
+    # for indices in itertools.combinations_with_replacement(tuple(range(max(limits))), len(tableOfParts)):
+    #     if not all(x < y for x,y in zip(indices, limits)):
+    #         continue
+    #     word = align((row[i] for i, row in zip(indices, tableOfParts)), gapSymbol="\x01", missMatchSymbol="\x02", trim=True, compressed=True)
+    #     score = len(word.replace("\x01", "").replace("\x02", "")) / (len(word)+1)
 
-        words.append((word.replace("\x01", kwargs.get("gapSymbol", "-")).replace("\x02", kwargs.get("missMatchSymbol", "_")), score))
+    #     words.append((word.replace("\x01", kwargs.get("gapSymbol", "-")).replace("\x02", kwargs.get("missMatchSymbol", "_")), score))
 
-    return max(words, key=lambda x:x[1])[0]
+    # return max(words, key=lambda x:x[1])[0]
 

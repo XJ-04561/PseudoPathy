@@ -290,6 +290,14 @@ class DirectoryList(PathList): pass
 
 class FileList(PathList):
 	
+	
+	@cached_property
+	def name(self) -> str:
+		from PseudoPathy.FileNameAlignment import alignName
+		name = alignName(tuple(p.name for p in self))
+		ext = alignName(tuple(p.ext.replace(".", "-") for p in self))
+		return 
+
 	@cached_property
 	def signature(self) -> str:
 		from PseudoPathy.FileNameAlignment import alignSignature
