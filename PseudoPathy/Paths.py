@@ -294,9 +294,14 @@ class FileList(PathList):
 	@cached_property
 	def name(self) -> str:
 		from PseudoPathy.FileNameAlignment import alignName
-		name = alignName(tuple(p.name for p in self))
-		ext = alignName(tuple(p.ext.replace(".", "-") for p in self))
-		return 
+		return alignName(tuple(p.name for p in self))
+	
+	@cached_property
+	def ext(self) -> str|tuple[str]:
+		if len(set(map(*this.ext, self))) == 1:
+			self[0].ext
+		else:
+			return tuple(fp.ext for fp in self)
 
 	@cached_property
 	def signature(self) -> str:
