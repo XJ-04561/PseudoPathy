@@ -2,7 +2,7 @@
 from PseudoPathy.Globals import *
 import PseudoPathy.Globals as Globals
 from PseudoPathy.Paths import DirectoryPath, PathGroup
-from PseudoPathy.Group import PathGroup
+from PseudoPathy.Groups import PathGroup
 
 class SoftwareDirs:
 	"""This is what you want to override for installation/software-related files to go into a folder named after your Software"""

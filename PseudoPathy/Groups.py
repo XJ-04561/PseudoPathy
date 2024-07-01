@@ -35,6 +35,10 @@ class PathGroup(Pathy):
 	def fullPerms(self): return self.create(purpose="rwx")
 
 	@property
+	def hasMagic(self) -> bool:
+		return any(r.hasMagic for r in self._roots)
+	
+	@property
 	def exists(self): return any(pExists(p) for p in self)
 
 	@property
@@ -149,13 +153,8 @@ class PathGroup(Pathy):
 		else:
 			return self.__str__().replace("\n", "\n  ")
 
-	def __getitem__(self, path : str, purpose:str=None) -> Path:
-		from PseudoPathy import FilePath, DirectoryPath
-		for r in self._roots:
-			out = r / path
-			if pAccess(out, purpose or self.defaultPurpose):
-				return out
-		return None
+	def __getitem__(self, path : str) -> Path:
+		return self.find(path, purpose=self.defaultPurpose)
 
 	def __eq__(self, other):
 		if isinstance(other, PathGroup):
@@ -176,25 +175,28 @@ class PathGroup(Pathy):
 
 	def find(self, path : str="", purpose : str=None):
 		'''Looks for path in the group of directories and returns first found path.'''
-		return self.__getitem__(path, purpose=purpose)
+		for r in self._roots:
+			if out := r.find(path, purpose=purpose):
+				return out
+		return None
 
 	def findall(self, path : str="", purpose : str=None):
 		return tuple(filter(lambda p:pAccess(p,purpose or self.defaultPurpose), map(Path(path).prepend, self._roots)))
 	
-	def create(self, path : str="", purpose : str=None, others : str="r") -> Path:
+	def create(self, path : str=None, purpose : str=None, others : str="r") -> Path:
 		'''Should not be used to create files, only directories!'''
 		# Try to find existing path for purpose(s).
 		if path:
-			paths = tuple(map(lambda r:r / path, self._roots))
+			paths = tuple(map(lambda r:r / path, ))
 		else:
 			paths = self._roots
 		
-		for p in paths:
-			if pAccess(p, purpose or self.defaultPurpose):
-				return p
+		for r in self._roots:
+			if out := r.find(path, purpose=purpose):
+				return out
 		# Try to make a path for purpose(s).
-		for p in paths:
-			if (out := p.create(purpose=purpose or self.defaultPurpose, others=others)) is not None:
+		for r in self._roots:
+			if out := r.create(path, purpose=purpose or self.defaultPurpose, others=others):
 				return out
 		return None
 

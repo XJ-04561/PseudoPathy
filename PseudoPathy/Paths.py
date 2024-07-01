@@ -4,32 +4,56 @@ from typing import Any
 from PseudoPathy.Globals import *
 import PseudoPathy.Globals as Globals
 
-class Path: pass
-class PathGroup: pass
 
-class Path(str, Pathy):
+PATH_SPLIT_PATTERN = re.compile((
+	r"['][^']*?[']"
+	r"|[\"][^\"]*?[\"]"
+	r"|^[^/'\"]+(?=[/])?"
+	r"|^/"
+	r"|(?<=[/])[^/'\"]+?$"
+	r"|(?<=[/]).*?(?=[/])"
+).replace("/", os.sep))
+
+class Path(Pathy, str):
 	""""""
 
 	defaultPurpose : str
-	writable : Path
+	segments : tuple[str]
+
+	writable : "Path"
 	"""The first path with writing permissions. If none exists, then tries to create one (Given that at least one path is not existent on the system)"""
-	readable : Path
+	readable : "Path"
 	"""The first path with reading permissions."""
-	executable : Path
+	executable : "Path"
 	"""The first path with execution permissions."""
-	fullPerms : Path
+	fullPerms : "Path"
 	"""The first path with full permissions. If none exists, then tries to create one (Given that at least one path is not existent on the system)"""
 	exists : bool
 	"""Whether the directory/file exists on the system."""
 
 	@property
-	def writable(self): return self.create(purpose="w")
+	def writable(self): return self.__getitem__("", purpose="w") or self.create(purpose="w")
 	@property
 	def readable(self): return self.__getitem__("", purpose="r")
 	@property
 	def executable(self): return self.__getitem__("", purpose="x")
 	@property
 	def fullPerms(self): return self.create(purpose="rwx")
+
+	@property
+	def hasMagic(self) -> bool:
+		return glob.has_magic(self)
+
+	@property
+	def filemode(self) -> str:
+		return stat.filemode(self.stat.mode)
+	
+	@property
+	def stat(self) -> Stat:
+		return Stat(self)
+	@property
+	def lstat(self) -> LStat:
+		return LStat(self)
 	
 	@property
 	def exists(self): return pExists(self)
@@ -65,28 +89,33 @@ class Path(str, Pathy):
 			cls = DirectoryPath
 			
 		obj = super().__new__(cls, joined)
+		obj.segments = tuple(PATH_SPLIT_PATTERN.findall(obj))
 		obj.defaultPurpose = purpose if purpose is not None else "r"
 		return obj
 	
 	def __add__(self, right):
 		if isinstance(right, Path):
-			return type(right)(str.__add__(self, right), purpose=self.defaultPurpose)
+			return type(right)(*self.segments[:-1], self.segments[-1]+right, purpose=self.defaultPurpose)
 		elif isinstance(right, str):
 			return Path(str.__add__(self, right), purpose=self.defaultPurpose)
 		else:
 			return NotImplemented
 
 	def __radd__(self, left):
-		if isinstance(left, str):
-			return type(self)(str.__add__(left, self), purpose=self.defaultPurpose)
-		else:
+		if not isinstance(left, str):
 			return NotImplemented
+		elif self.segments[0] == self.root or self.segments[0] == self.drive:
+			return type(self)(self.segments[0], left+(self.segments[1] if len(self.segments) > 1 else ""), *self.segments[2:], purpose=self.defaultPurpose)
+		else:
+			return type(self)(left+self.segments[0], *self.segments[2:], purpose=self.defaultPurpose)
 		
 	def __sub__(self, right):
 		return type(self)(str.__add__(self.rstrip(os.path.sep), right), purpose=self.defaultPurpose)
 
 	def __truediv__(self, right):
-		if isinstance(right, Path):
+		if right is None:
+			return self
+		elif isinstance(right, Path):
 			return type(right)(self, right, purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
 		else:
 			return Path(self, right, purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
@@ -94,47 +123,47 @@ class Path(str, Pathy):
 	def __rtruediv__(self, left):
 		return type(self)(left, self, purpose=self.defaultPurpose)
 
-	def __or__(self, right : Path|PathGroup):
-		from PseudoPathy.Group import PathGroup
+	def __or__(self, right : "Path|PathGroup"):
+		from PseudoPathy.Groups import PathGroup
 		if not isinstance(right, str) and isinstance(right, (Iterable, Iterator)):
 			return PathGroup([self] + list(right), purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
 		else:
 			return PathGroup([self, right], purpose=getattr(right, "defaultPurpose", self.defaultPurpose))
 	
-	def __ror__(self, left : Path|PathGroup):
-		from PseudoPathy.Group import PathGroup
+	def __ror__(self, left : "Path|PathGroup"):
+		from PseudoPathy.Groups import PathGroup
 		if not isinstance(left, str) and isinstance(left, (Iterable, Iterator)):
 			return PathGroup(list(left) + [self], purpose=self.defaultPurpose or getattr(left, "defaultPurpose", None))
 		else:
 			return PathGroup([left, self], purpose=self.defaultPurpose or getattr(left, "defaultPurpose", None))
 		
-	def __iter__(self) -> list[Path]:
+	def __iter__(self) -> list["Path"]:
 		return iter([self])
 	
 	def __contains__(self, item):
-		return pExists(self / item)
+		return True if next(glob.iglob(self / item), None) is not None else False
 	
-	def __getitem__(self, path : str, purpose:str=None) -> str:
-		if type(path) in [slice, int]:
-			return str.__getitem__(self, path)
-		if not pExists(self / path):
-			return None
-		if pAccess(self / path, purpose or self.defaultPurpose):
-			return Path(self / path, purpose=purpose or self.defaultPurpose)
-		return None
+	def __getitem__(self, segmentIndex : int|slice) -> str:
+		return self.segments[segmentIndex]
 	
 	def __format__(self, fs):
 		if fs.endswith("s"):
 			fs = fs[:-1]
 			try:
-				return f"{stat.filemode(os.stat(self).st_mode)} {str(self).ljust(int('0'+fs[1:])-11) if fs.startswith('<') else str(self).rjust(int('0'+fs[1:])-11)}"
+				return f"{self.filemode} {str(self).ljust(int('0'+fs[1:])-11) if fs.startswith('<') else str(self).rjust(int('0'+fs[1:])-11)}"
 			except:
 				return f"---------- {str(self).ljust(int('0'+fs[1:])-11) if fs.startswith('<') else str(self).rjust(int('0'+fs[1:])-11) if fs.startswith('>') else str(self).center(int('0'+fs[1:])-11)}"
 		else:
 			return format(str(self), fs)
 	
-	def find(self, path : str="", purpose : str=None):
-		return self.__getitem__(path, purpose=purpose)
+	def find(self, path : str=None, purpose : str=None) -> "PathList|Path|None":
+		
+		if pAccess(self / path, purpose=purpose or self.defaultPurpose):
+			return self / path
+		elif res := sorted(list(filter(lambda x:pAccess(x, purpose or self.defaultPurpose), glob.iglob(self / path, recursive=True)))):
+			return PathList(res, purpose=purpose or self.defaultPurpose)
+		else:
+			return None
 
 	def prepend(self, path):
 		return path / self
@@ -142,14 +171,13 @@ class Path(str, Pathy):
 	def append(self, path):
 		return self / path
 
-	def create(self, path : str="", purpose : str=None, others : str="r") -> Path:
+	def create(self, path : str=None, purpose : str=None, others : str="r") -> "Path|None":
 		'''Should not be used to create files, only directories!'''
-		from PseudoPathy.PathShortHands import pPerms
-		if purpose is None:
-			purpose = self.defaultPurpose
+		from PseudoPathy.ShortHands import pPerms
+		purpose = purpose or self.defaultPurpose
 	
-		if pAccess(self / path, purpose):
-			return self / path
+		if ret := self.find(path, purpose=purpose):
+			return ret if not isinstance(ret, PathList) else ret[0]
 		
 		elif pBackAccess(self, "w"): # Try to make a path for purpose(s).
 			try:
@@ -236,74 +264,8 @@ class UniqueDirectoryPath(DirectoryPath, Unique):
 		
 		return super().__new__(cls, tempfile.mkdtemp(dir=dirname, prefix=prefix+"-[", suffix="]"), purpose=purpose)
 
-class PathList(tuple):
-	"""Is not based on the `list` type, as mutability is not desired, but the name is used for ease of learning for
-	lesser experienced maintainers."""
-	@overload
-	def __new__(cls, iterable): ...
-	@overload
-	def __new__(cls, *paths): ...
-	def __new__(cls, first, *rest):
-		if cls is FileList:
-			pathCls = FilePath
-		elif cls is DirectoryList:
-			pathCls = DirectoryPath
-		else:
-			pathCls = Path
-		
-		if not rest and not isinstance(first, str):
-			paths = tuple(map(pathCls, first))
-		else:
-			paths = tuple(map(pathCls, (first,) + rest))
-		
-		if cls is PathList:
-			if all(isinstance(p, FilePath) for p in paths):
-				return super().__new__(FileList, paths)
-			elif all(isinstance(p, DirectoryPath) for p in paths):
-				return super().__new__(DirectoryList, paths)
-		
-		return super().__new__(cls, paths)
-	
-	def __str__(self):
-		return " ".join(self)
-	
-	def __format__(self, format_spec : str):
-		if format_spec.endswith("n"):
-			return format(self.name, format_spec.rstrip("n"))
-		else:
-			return format(" ".join(map(lambda p:"'"+p.strip("'")+"'", self)), format_spec)
-	
-	def __iter__(self) -> Generator["PathList",None,None]:
-		return super().__iter__()
-	
-	@cached_property
-	def name(self) -> str:
-		from PseudoPathy.FileNameAlignment import alignName
-		return alignName(tuple(pName(p) for p in self))
-	
-	@cached_property
-	def signature(self) -> str:
-		from PseudoPathy.FileNameAlignment import alignSignature
-		return alignSignature(self)
-
-class DirectoryList(PathList): pass
-
-class FileList(PathList):
-	
-	
-	@cached_property
-	def name(self) -> str:
-		from PseudoPathy.FileNameAlignment import alignName
-		return alignName(tuple(p.name for p in self))
-	
-	@cached_property
-	def ext(self) -> str|tuple[str]:
-		if len(set(map(*this.ext, self))) == 1:
-			self[0].ext
-		else:
-			return tuple(fp.ext for fp in self)
-
-	@cached_property
-	def signature(self) -> str:
-		from PseudoPathy.FileNameAlignment import alignSignature
-		return alignSignature(tuple(p.directory / p.name for p in self))
+try:
+	from PseudoPathy.Groups import PathGroup
+	from PseudoPathy.Lists import PathList, DirectoryList, FileList
+except ImportError:
+	pass

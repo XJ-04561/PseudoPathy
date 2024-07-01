@@ -1,6 +1,6 @@
 
 from PseudoPathy import *
-from PseudoPathy.PathShortHands import pSep
+from PseudoPathy.ShortHands import pSep
 
 def test_compatibility():
 	import os
@@ -26,7 +26,7 @@ def test_compatibility():
 
 def test_filenameAlignment():
 	from PseudoPathy.Paths import Path, DirectoryPath, FilePath, PathList, DirectoryList, FileList
-	from PseudoPathy.FileNameAlignment import align, align2, alignName
+	from PseudoPathy.Alignments import align, align2, alignName
 	import os
 	curDir, userDir = Path(os.path.realpath(".")), Path(os.path.expanduser("~"))
 	file1 = curDir / "myfile_[1].zip"

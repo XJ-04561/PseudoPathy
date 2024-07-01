@@ -2,9 +2,9 @@
 import tempfile
 
 import PseudoPathy.Globals as Globals
-from PseudoPathy.PathShortHands import *
+from PseudoPathy.ShortHands import *
 from PseudoPathy.Paths import Path, FilePath, DirectoryPath
-from PseudoPathy.Group import PathGroup, DirectoryGroup, FileGroup
+from PseudoPathy.Groups import PathGroup, DirectoryGroup, FileGroup
 
 @Globals.overload
 def createTemp(dir : FilePath|FileGroup=None, prefix : str=None, suffix : str=None, ext : str=None) -> FilePath: ...

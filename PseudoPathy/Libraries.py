@@ -2,8 +2,8 @@
 
 from PseudoPathy.Globals import *
 from PseudoPathy.Paths import Path, FilePath, DirectoryPath
-from PseudoPathy.Group import PathGroup
-from PseudoPathy.PathUtilities import SoftwareDirs
+from PseudoPathy.Groups import PathGroup
+from PseudoPathy.Utilities import SoftwareDirs
 
 _formatPat = re.compile(r"^(.+?)([<^>])(\d+?)(.*)$")
 _LINE_SKIP = object()
