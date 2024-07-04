@@ -139,11 +139,17 @@ class PathGroup(Pathy):
 	def __iter__(self):
 		return iter(self._roots)
 
+	# def __str__(self):
+	# 	ret = [f"PathGroup at 0x{id(self):0>16x}:"]
+	# 	for p in self._roots:
+	# 		ret.append(f" | {p:<50s}")
+	# 	return "\n".join(ret)
+
 	def __str__(self):
-		ret = [f"PathGroup at 0x{id(self):0>16x}:"]
-		for p in self._roots:
-			ret.append(f" | {p:<50s}")
-		return "\n".join(ret)
+		return ";".join(map(str, self._roots))
+	
+	def __repr__(self):
+		return repr(";".join(map(str, self._roots)))
 
 	def __format__(self, fs):
 		m = _formatPat.match(fs)
@@ -181,15 +187,11 @@ class PathGroup(Pathy):
 		return None
 
 	def findall(self, path : str="", purpose : str=None):
-		return tuple(filter(lambda p:pAccess(p,purpose or self.defaultPurpose), map(Path(path).prepend, self._roots)))
+		return tuple(out for r in self._roots if (out := r.find(path, purpose=purpose)))
 	
 	def create(self, path : str=None, purpose : str=None, others : str="r") -> Path:
 		'''Should not be used to create files, only directories!'''
 		# Try to find existing path for purpose(s).
-		if path:
-			paths = tuple(map(lambda r:r / path, ))
-		else:
-			paths = self._roots
 		
 		for r in self._roots:
 			if out := r.find(path, purpose=purpose):

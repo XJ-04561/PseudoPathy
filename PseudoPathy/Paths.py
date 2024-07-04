@@ -32,11 +32,11 @@ class Path(Pathy, str):
 	"""Whether the directory/file exists on the system."""
 
 	@property
-	def writable(self): return self.__getitem__("", purpose="w") or self.create(purpose="w")
+	def writable(self): return self.find(purpose="w") or self.create(purpose="w")
 	@property
-	def readable(self): return self.__getitem__("", purpose="r")
+	def readable(self): return self.find(purpose="r")
 	@property
-	def executable(self): return self.__getitem__("", purpose="x")
+	def executable(self): return self.find(purpose="x")
 	@property
 	def fullPerms(self): return self.create(purpose="rwx")
 
@@ -67,15 +67,20 @@ class Path(Pathy, str):
 		return FilePath(os.path.split(self)[1]) if "." in os.path.split(self)[1][1:] else None
 
 	@overload
-	def __new__(cls, /, p=".", *paths, purpose="r"): ...
-	def __new__(cls, /, p=".", *paths, purpose=None):
+	def __new__(cls, /, p=".", *paths, purpose="r", escape : bool=False): ...
+	def __new__(cls, /, p=".", *paths, purpose=None, escape : bool=False):
 
-		if paths or isinstance(p, str):
-			joined = pJoin(p, *paths)
-		elif type(p) is cls:
+		if type(p) is cls and not paths:
+			if escape:
+				obj = super().__new__(cls, glob.escape(p))
+				obj.segments = tuple(PATH_SPLIT_PATTERN.findall(obj))
+				obj.defaultPurpose = purpose if purpose is not None else "r"
+				return obj
 			if purpose is not None:
 				p.defaultPurpose = purpose
 			return p
+		elif paths or isinstance(p, str):
+			joined = pJoin(p, *paths)
 		elif isinstance(p, (Iterable, Iterator)):
 			joined = pJoin(*p)
 		else:
@@ -104,7 +109,7 @@ class Path(Pathy, str):
 	def __radd__(self, left):
 		if not isinstance(left, str):
 			return NotImplemented
-		elif self.segments[0] == self.root or self.segments[0] == self.drive:
+		elif pIsAbs(self):
 			return type(self)(self.segments[0], left+(self.segments[1] if len(self.segments) > 1 else ""), *self.segments[2:], purpose=self.defaultPurpose)
 		else:
 			return type(self)(left+self.segments[0], *self.segments[2:], purpose=self.defaultPurpose)
@@ -143,25 +148,24 @@ class Path(Pathy, str):
 	def __contains__(self, item):
 		return True if next(glob.iglob(self / item), None) is not None else False
 	
-	def __getitem__(self, segmentIndex : int|slice) -> str:
-		return self.segments[segmentIndex]
+	# def __getitem__(self, segmentIndex : int|slice) -> str:
+	# 	return self.segments[segmentIndex]
 	
 	def __format__(self, fs):
 		if fs.endswith("s"):
-			fs = fs[:-1]
-			try:
-				return f"{self.filemode} {str(self).ljust(int('0'+fs[1:])-11) if fs.startswith('<') else str(self).rjust(int('0'+fs[1:])-11)}"
-			except:
-				return f"---------- {str(self).ljust(int('0'+fs[1:])-11) if fs.startswith('<') else str(self).rjust(int('0'+fs[1:])-11) if fs.startswith('>') else str(self).center(int('0'+fs[1:])-11)}"
+			return f"{self.filemode} {format(str(self), fs[:-1])}"
 		else:
 			return format(str(self), fs)
 	
-	def find(self, path : str=None, purpose : str=None) -> "PathList|Path|None":
+	def escape(self):
+		return type(self)(self, purpose=self.defaultPurpose, escape=True)
+
+	def find(self, path : str=None, *, purpose : str=None) -> "PathList|Path|None":
 		
-		if pAccess(self / path, purpose=purpose or self.defaultPurpose):
+		if pAccess(self / path, purpose or self.defaultPurpose):
 			return self / path
 		elif res := sorted(list(filter(lambda x:pAccess(x, purpose or self.defaultPurpose), glob.iglob(self / path, recursive=True)))):
-			return PathList(res, purpose=purpose or self.defaultPurpose)
+			return PathList(res) if len(res) > 1 else Path(res[0])
 		else:
 			return None
 
@@ -188,6 +192,9 @@ class Path(Pathy, str):
 		else:
 			LOGGER.debug(f"pBackAccess({self!r}, \"w\") is False")
 		return None
+
+	def format(self, *args, **kwargs):
+		return type(self)(str.format(self, *args, **kwargs))
 
 class DirectoryPath(Path, Directory):
 	""""""
