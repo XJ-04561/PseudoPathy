@@ -162,9 +162,10 @@ class Path(Pathy, str):
 
 	def find(self, path : str=None, *, purpose : str=None) -> "PathList|Path|None":
 		
-		if pAccess(self / path, purpose or self.defaultPurpose):
-			return self / path
-		elif res := sorted(list(filter(lambda x:pAccess(x, purpose or self.defaultPurpose), glob.iglob(self / path, recursive=True)))):
+		path = self / path
+		if pAccess(path, purpose or self.defaultPurpose):
+			return path
+		if res := sorted(list(filter(lambda x:pAccess(x, purpose or self.defaultPurpose), glob.iglob(type(path)(os.path.expandvars(os.path.expanduser(path))), recursive=True)))):
 			return PathList(res) if len(res) > 1 else Path(res[0])
 		else:
 			return None
