@@ -165,7 +165,7 @@ class Path(Pathy, str):
 		path = self / path
 		if pAccess(path, purpose or self.defaultPurpose):
 			return path
-		if res := sorted(list(filter(lambda x:pAccess(x, purpose or self.defaultPurpose), glob.iglob(os.path.expandvars(os.path.expanduser(path)), recursive=True)))):
+		if res := sorted(list(filter(lambda x:pAccess(x, purpose or self.defaultPurpose), glob.iglob(os.path.expandvars(os.path.expanduser(str(path))), recursive=True)))):
 			return PathList(res) if len(res) > 1 else Path(res[0])
 		else:
 			return None
