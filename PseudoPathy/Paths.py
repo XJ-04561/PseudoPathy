@@ -165,7 +165,7 @@ class Path(Pathy, str):
 		path = self / path
 		if pAccess(path, purpose or self.defaultPurpose):
 			return path
-		if res := sorted(list(filter(lambda x:pAccess(x, purpose or self.defaultPurpose), glob.iglob(os.path.expandvars(os.path.expanduser(str(path))), recursive=True)))):
+		elif res := sorted(list(filter(lambda x:pAccess(x, purpose or self.defaultPurpose), glob.iglob(os.path.expandvars(os.path.expanduser(str(path))), recursive=True)))):
 			return PathList(res) if len(res) > 1 else Path(res[0])
 		else:
 			return None
@@ -178,17 +178,16 @@ class Path(Pathy, str):
 
 	def create(self, path : str=None, purpose : str=None, others : str="r") -> "Path|None":
 		'''Should not be used to create files, only directories!'''
-		from PseudoPathy.ShortHands import pPerms
 		purpose = purpose or self.defaultPurpose
-	
-		if ret := self.find(path, purpose=purpose):
-			return ret if not isinstance(ret, PathList) else ret[0]
-		
 		path = self / path
+		
+		if pAccess(path, purpose):
+			return path
+		
 		if pBackAccess(self, "w"): # Try to make a path for purpose(s).
 			try:
-				pMakeDirs(path.escape())
-				return path.escape()
+				pMakeDirs(path)
+				return path
 			except:
 				pass
 		else:

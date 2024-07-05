@@ -181,8 +181,12 @@ class PathGroup(Pathy):
 
 	def find(self, path : str=None, purpose : str=None):
 		'''Looks for path in the group of directories and returns first found path.'''
-		for r in self._roots:
-			if out := r.find(path, purpose=purpose):
+		paths = [r / path for r in self._roots]
+		for path in paths:
+			if pAccess(path, purpose or path.defaultPurpose):
+				return path
+		for path in paths:
+			if out := path.find(purpose=purpose):
 				return out
 		return None
 
@@ -191,15 +195,16 @@ class PathGroup(Pathy):
 	
 	def create(self, path : str=None, purpose : str=None, others : str="r") -> Path:
 		'''Should not be used to create files, only directories!'''
-		
+		paths = [r / path for r in self._roots]
 		# Try to find existing path for purpose(s).
-		if (out := self.find(path, purpose=purpose)):
-			return out
+		for path in paths:
+			if pAccess(path, purpose or path.defaultPurpose):
+				return path
 		
 		# Try to make a path for purpose(s).
-		for r in self._roots:
-			if out := r.create(path, purpose=purpose or self.defaultPurpose, others=others):
-				return out
+		for path in paths:
+			if path.create(purpose=purpose or path.defaultPurpose, others=others):
+				return path
 		return None
 
 class DirectoryGroup(PathGroup, Directory): pass
