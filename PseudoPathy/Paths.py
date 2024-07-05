@@ -184,10 +184,11 @@ class Path(Pathy, str):
 		if ret := self.find(path, purpose=purpose):
 			return ret if not isinstance(ret, PathList) else ret[0]
 		
-		elif pBackAccess(self, "w"): # Try to make a path for purpose(s).
+		path = self / path
+		if pBackAccess(self, "w"): # Try to make a path for purpose(s).
 			try:
-				pMakeDirs(self / path)
-				return self / path
+				pMakeDirs(path.escape())
+				return path.escape()
 			except:
 				pass
 		else:

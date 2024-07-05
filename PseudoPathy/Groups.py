@@ -179,23 +179,23 @@ class PathGroup(Pathy):
 	def endswith(self, string : str):
 		return all(r.endswith(string) for r in self._roots)
 
-	def find(self, path : str="", purpose : str=None):
+	def find(self, path : str=None, purpose : str=None):
 		'''Looks for path in the group of directories and returns first found path.'''
 		for r in self._roots:
 			if out := r.find(path, purpose=purpose):
 				return out
 		return None
 
-	def findall(self, path : str="", purpose : str=None):
+	def findall(self, path : str=None, purpose : str=None):
 		return tuple(out for r in self._roots if (out := r.find(path, purpose=purpose)))
 	
 	def create(self, path : str=None, purpose : str=None, others : str="r") -> Path:
 		'''Should not be used to create files, only directories!'''
-		# Try to find existing path for purpose(s).
 		
-		for r in self._roots:
-			if out := r.find(path, purpose=purpose):
-				return out
+		# Try to find existing path for purpose(s).
+		if (out := self.find(path, purpose=purpose)):
+			return out
+		
 		# Try to make a path for purpose(s).
 		for r in self._roots:
 			if out := r.create(path, purpose=purpose or self.defaultPurpose, others=others):
