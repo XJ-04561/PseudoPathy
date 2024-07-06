@@ -104,7 +104,7 @@ class LStat(Stat):
 
 OPEN_PATHS = []
 
-LOGGER = logging.Logger("PseudoPathy", level=logging.FATAL)
+LOGGER = logging.getLogger("PseudoPathy")
 """`logging.Logger` object to use."""
 
 DISPOSE : bool = True

@@ -79,6 +79,8 @@ class Path(Pathy, str):
 			if purpose is not None:
 				p.defaultPurpose = purpose
 			return p
+		elif not paths and isinstance(p, str):
+			joined = p
 		elif paths or isinstance(p, str):
 			joined = pJoin(p, *paths)
 		elif isinstance(p, (Iterable, Iterator)):
@@ -98,7 +100,7 @@ class Path(Pathy, str):
 		obj.defaultPurpose = purpose if purpose is not None else "r"
 		return obj
 	
-	def __add__(self, right):
+	def __sub__(self, right):
 		if isinstance(right, Path):
 			return type(right)(*self.segments[:-1], self.segments[-1]+right, purpose=self.defaultPurpose)
 		elif isinstance(right, str):
@@ -106,16 +108,13 @@ class Path(Pathy, str):
 		else:
 			return NotImplemented
 
-	def __radd__(self, left):
+	def __rsub__(self, left):
 		if not isinstance(left, str):
 			return NotImplemented
 		elif pIsAbs(self):
 			return type(self)(self.segments[0], left+(self.segments[1] if len(self.segments) > 1 else ""), *self.segments[2:], purpose=self.defaultPurpose)
 		else:
 			return type(self)(left+self.segments[0], *self.segments[2:], purpose=self.defaultPurpose)
-		
-	def __sub__(self, right):
-		return type(self)(str.__add__(self.rstrip(os.path.sep), right), purpose=self.defaultPurpose)
 
 	def __truediv__(self, right):
 		if right is None:
@@ -184,7 +183,7 @@ class Path(Pathy, str):
 		if pAccess(path, purpose):
 			return path
 		
-		if pBackAccess(self, "w"): # Try to make a path for purpose(s).
+		if pBackAccess(path, "w"): # Try to make a path for purpose(s).
 			try:
 				pMakeDirs(path)
 				return path

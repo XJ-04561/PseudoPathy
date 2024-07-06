@@ -200,11 +200,13 @@ class PathGroup(Pathy):
 		for path in paths:
 			if pAccess(path, purpose or path.defaultPurpose):
 				return path
+		LOGGER.debug(f"None of paths found: {paths}")
 		
 		# Try to make a path for purpose(s).
 		for path in paths:
-			if path.create(purpose=purpose or path.defaultPurpose, others=others):
+			if createdPath := path.create(purpose=purpose or path.defaultPurpose, others=others):
 				return path
+			LOGGER.debug(f"{path}.create() -> {createdPath}")
 		return None
 
 class DirectoryGroup(PathGroup, Directory): pass

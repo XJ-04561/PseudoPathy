@@ -11,16 +11,15 @@ _LINE_SKIP = object()
 class PathLibrary:
 	"""Same functionalities as SoftwareLibrary, but with no default directories and groups."""
 	
-	def __init__(self, *args, **kwargs):
+	def __init__(self, **kwargs):
 		for name, path in filter(lambda x: x[0] not in self.__dict__, kwargs.items()):
-			if type(path) in [Path, DirectoryPath, FilePath, PathGroup]:
+			if isinstance(path, Pathy):
 				setattr(self, name, path)
 			else:
 				try:
 					setattr(self, name, Path(path))
 				except:
-					# Not acceptable data type for a path.
-					pass
+					setattr(self, name, path)
 	
 	def __contains__(self, item):
 		return hasattr(self, item)
@@ -56,10 +55,7 @@ class PathLibrary:
 			return self.__str__().replace("\n", "\n  ")
 	
 	def __len__(self):
-		return len(self._lib)
-	
-	def clear(self):
-		self._lib = {}
+		return len(self.__dict__)
 
 	def access(self, path, mode : str="rwx", create : bool=False):
 		'''Throws appropriate errors if access is not possible.'''
