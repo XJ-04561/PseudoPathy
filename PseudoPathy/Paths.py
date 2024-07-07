@@ -200,6 +200,10 @@ class DirectoryPath(Path, Directory):
 	""""""
 	
 	@property
+	def name(self):
+		return os.path.basename(self)
+
+	@property
 	def directory(self) -> "DirectoryPath":
 		return self
 	
