@@ -20,7 +20,7 @@ def unCapitalize(string):
 
 # _P = TypeVar("_P")
 # _PI = TypeVar("_PI")
-class Pathy(ABC, Subscriptable): ...
+class Pathy(Subscriptable, ABC): ...
 	
 	# readable : "Pathy"
 	# writable : "Pathy"
