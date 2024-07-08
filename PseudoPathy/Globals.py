@@ -6,6 +6,7 @@ from itertools import chain
 from typing import overload, Literal, Container, Any, Callable, Generator, Union, Iterator, Iterable, final, TypeVar
 from This import this
 from abc import ABC, abstractmethod
+from GeekyGadgets.TypeHinting import Subscriptable
 
 if os.name == "nt": # Is windows-like path separation
 	SPLITTER = re.compile(f"[.]|[-]|[_]|[{os.path.sep}{os.path.sep}]")
@@ -19,7 +20,7 @@ def unCapitalize(string):
 
 # _P = TypeVar("_P")
 # _PI = TypeVar("_PI")
-class Pathy(ABC): ...
+class Pathy(ABC, Subscriptable): ...
 	
 	# readable : "Pathy"
 	# writable : "Pathy"
