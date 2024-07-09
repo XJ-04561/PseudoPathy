@@ -95,6 +95,15 @@ class Path(Pathy, str):
 		obj.defaultPurpose = purpose if purpose is not None else "r"
 		return obj
 	
+	def __add__(self, right):
+		if isinstance(right, Pathy):
+			return type(right)(str.__add__(self, right))
+		else:
+			return type(self)(str.__add__(self, right))
+		
+	def __radd__(self, left):
+		return type(self)(str.__add__(left, self))
+
 	def __sub__(self, right):
 		if isinstance(right, Path):
 			return type(right)(*self.segments[:-1], self.segments[-1]+right, purpose=self.defaultPurpose)
