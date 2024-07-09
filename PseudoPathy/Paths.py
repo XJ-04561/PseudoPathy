@@ -71,11 +71,6 @@ class Path(Pathy, str):
 	def __new__(cls, /, p=".", *paths, purpose=None, escape : bool=False):
 
 		if type(p) is cls and not paths:
-			if escape:
-				obj = super().__new__(cls, glob.escape(p))
-				obj.segments = tuple(PATH_SPLIT_PATTERN.findall(obj))
-				obj.defaultPurpose = purpose if purpose is not None else "r"
-				return obj
 			if purpose is not None:
 				p.defaultPurpose = purpose
 			return p
@@ -157,7 +152,7 @@ class Path(Pathy, str):
 			return format(str(self), fs)
 	
 	def escape(self):
-		return type(self)(self, purpose=self.defaultPurpose, escape=True)
+		return type(self)(glob.escape(self), purpose=self.defaultPurpose)
 
 	def find(self, path : str=None, *, purpose : str=None) -> "PathList|Path|None":
 		
