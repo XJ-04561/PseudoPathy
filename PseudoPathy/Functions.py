@@ -34,11 +34,13 @@ def createTempDir(prefix : str=None, suffix : str=None, *, dir : DirectoryPath|D
 	Globals.OPEN_PATHS.append(outPath)
 	return DirectoryPath(outPath.name)
 
-def createTempFile(prefix : str=None, suffix : str=None, ext : str=None, *, dir : DirectoryPath|DirectoryGroup=None) -> FilePath:
+def createTempFile(prefix : str=None, suffix : str=None, ext : str=None, *, dir : DirectoryPath|DirectoryGroup|None=None) -> FilePath:
 	if isinstance(dir, Globals.Pathy):
 		dir = dir.writable
-	else:
+	elif isinstance(dir, str):
 		pMakeDirs(dir)
+	elif dir is None:
+		pMakeDirs(dir := pExpUser("~"))
 	prefix = f"{prefix}-[" if prefix else "["
 	ext = "" if not ext else (ext if ext.startswith(".") else "."+ext)
 	suffix = f"]-{suffix}{ext}" if suffix else "]"
